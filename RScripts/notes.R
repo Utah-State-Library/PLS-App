@@ -1,0 +1,1 @@
+# Add metadata column in variable key file so that render_table() can detect column type and format accordingly
