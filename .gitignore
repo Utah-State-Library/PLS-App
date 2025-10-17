@@ -1,4 +1,5 @@
 rsconnect
+*_files
 .RData
 .Rhistory
 .Rproj

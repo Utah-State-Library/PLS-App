@@ -113,7 +113,7 @@ ui <- page_navbar(
         '
           $(document).ready(function() {
             $(".navbar-brand").replaceWith(
-              $("<a class = \'navbar-brand\' href = \'https://library.utah.gov/\'></a>")
+              $("<a target=\'_blank\' rel=\'noopener noreferrer\' class = \'navbar-brand\' href = \'https://library.utah.gov/\'></a>")
             );
             var containerHeight = $(".navbar .container-fluid").height() + "px";
             $(".navbar-brand")
