@@ -1,0 +1,70 @@
+#### Input Lists ####
+
+current_year <- max(as.numeric(pls$FISCAL_YEAR))
+
+years <- pls %>%
+  summarise(unique(FISCAL_YEAR)) %>%
+  pull() %>%
+  sort(decreasing = TRUE)
+
+libnames <- pls %>%
+  filter(
+    CURRENT_LIBNAME != "All Libraries",
+    FISCAL_YEAR == current_year, ## TODO, handle this in servers with updatePicker logic
+    hide_lib == 0
+  ) %>%
+  select(CURRENT_LIBNAME) %>%
+  distinct() %>%
+  arrange(CURRENT_LIBNAME) %>%
+  pull()
+
+current_FSCS <- pls %>%
+  filter(FISCAL_YEAR == current_year, hide_lib == 0) %>%
+  summarise(FSCSKEY) %>%
+  unique() %>%
+  pull()
+
+counties <- librarykey %>%
+  summarise(unique(COUNTY)) %>%
+  pull() %>%
+  sort()
+
+ae_name <- librarykey %>%
+  filter(FSCS_ID %in% current_FSCS) %>%
+  summarise(unique(ADMINISTRATIVE_ENTITY_NAME)) %>%
+  pull() %>%
+  sort()
+
+
+#### Special Handling Columns
+
+## Per Capita cases where the column needs to be calculated per 1000 people
+per1000_cols <- c(
+  "TOTSTAFF",
+  "GPTERMS",
+  "HOTSPOT",
+  "K0_5PRO",
+  "K6_11PRO",
+  "YAPRO",
+  "ADULTPRO",
+  "GENPRO",
+  "TOTPRO"
+)
+
+## Currency Columns
+currency_cols <- c(
+  "TOTOPEXP",
+  "STAFFEXP",
+  "TOTEXPCO",
+  "OTHOPEXP",
+  "SALARIES",
+  "BENEFIT",
+  "PRMATEXP",
+  "ELMATEXP",
+  "OTHMATEX",
+  "TOTINCM",
+  "LOCGVT",
+  "STGVT",
+  "FEDGVT",
+  "OTHINCM"
+)

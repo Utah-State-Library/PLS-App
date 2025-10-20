@@ -40,56 +40,10 @@ librarykey <- readRDS("data/librarykey.rds")
 
 
 #### Input Lists ####
+source("RScripts/lists.R", local = TRUE)
 
-current_year <- max(as.numeric(pls$FISCAL_YEAR))
-
-years <- pls %>%
-  summarise(unique(FISCAL_YEAR)) %>%
-  pull() %>%
-  sort(decreasing = TRUE)
-
-libnames <- pls %>%
-  filter(
-    CURRENT_LIBNAME != "All Libraries",
-    FISCAL_YEAR == current_year, ## TODO, handle this in servers with updatePicker logic
-    hide_lib == 0
-  ) %>%
-  select(CURRENT_LIBNAME) %>%
-  distinct() %>%
-  arrange(CURRENT_LIBNAME) %>%
-  pull()
-
-current_FSCS <- pls %>%
-  filter(FISCAL_YEAR == current_year, hide_lib == 0) %>%
-  summarise(FSCSKEY) %>%
-  unique() %>%
-  pull()
-
-counties <- librarykey %>%
-  summarise(unique(COUNTY)) %>%
-  pull() %>%
-  sort()
-
-ae_name <- librarykey %>%
-  filter(FSCS_ID %in% current_FSCS) %>%
-  summarise(unique(ADMINISTRATIVE_ENTITY_NAME)) %>%
-  pull() %>%
-  sort()
-
-per1000_cols <- c(
-  "TOTSTAFF",
-  "GPTERMS",
-  "HOTSPOT",
-  "K0_5PRO",
-  "K6_11PRO",
-  "YAPRO",
-  "ADULTPRO",
-  "GENPRO",
-  "TOTPRO"
-)
-
-
-source("RScripts/functions.R", local = T)
+#### Functions ####
+source("RScripts/functions.R", local = TRUE)
 
 
 #### UI ####
@@ -104,8 +58,7 @@ ui <- page_navbar(
 
   #### USL Logo in Header ####
   shiny::includeCSS("www/styles.css"),
-  use_tota11y(),
-  #useShinyjs(),
+  use_tota11y(), # for accessibility checking - remove/comment out in final product
 
   tags$head(
     tags$script(
