@@ -29,9 +29,9 @@ counties <- librarykey %>%
   pull() %>%
   sort()
 
-ae_name <- librarykey %>%
-  filter(FSCS_ID %in% current_FSCS) %>%
-  summarise(unique(ADMINISTRATIVE_ENTITY_NAME)) %>%
+ae_name <- outlets %>%
+  filter(FSCSKEY %in% current_FSCS) %>%
+  summarise(unique(CURRENT_LIBNAME_AE)) %>%
   pull() %>%
   sort()
 
