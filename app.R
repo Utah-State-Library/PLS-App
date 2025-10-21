@@ -17,6 +17,7 @@ library(shinyalert)
 library(sjmisc)
 library(htmlwidgets)
 library(shinya11y)
+library(sf)
 
 #### Color Palette ####
 head_color <- "#002F6C"
@@ -34,10 +35,31 @@ options(highcharter.lang = hcoptslang)
 # Created in `./***/Combine PLS Data.R`
 pls <- readRDS("data/pls_national.rds") %>%
   filter(STABR == "UT", !str_detect(CURRENT_LIBNAME, "Bookmobile")) %>%
-  mutate(CNTY = str_to_title(CNTY))
+  mutate(CNTY = str_to_title(CNTY), CITY = str_to_title(CITY))
 variable_key <- read.csv("data/pls_variable_key.csv")
 librarykey <- readRDS("data/librarykey.rds")
+outlets <- readRDS("data/pls_outlet_national.rds") %>%
+  filter(STABR == "UT") %>%
+  mutate(
+    CITY = case_when(
+      CITY == "South Salt Lake City" ~ "South Salt Lake",
+      CITY == "Mt. Pleasant" ~ "Mount Pleasant",
+      .default = CITY
+    ),
+  )
 
+county_shp <- st_read("data/counties/counties.shp") %>%
+  mutate(NAME = str_to_title(NAME))
+county_shp <- st_transform(county_shp, '+proj=longlat +datum=WGS84')
+municipalities <- st_read("data/municipalities/municipalities.shp") %>%
+  mutate(
+    NAME = case_when(
+      NAME == "Magna City" ~ "Magna",
+      NAME == "South Salt Lake City" ~ "South Salt Lake",
+      .default = NAME
+    )
+  )
+municipalities <- st_transform(municipalities, '+proj=longlat +datum=WGS84')
 
 #### Input Lists ####
 source("RScripts/lists.R", local = TRUE)
@@ -79,7 +101,7 @@ ui <- page_navbar(
     )
   ),
 
-  #source("RScripts/state_ui.R", local = TRUE)$value,
+  source("RScripts/state_ui.R", local = TRUE)$value,
   source("RScripts/single_ui.R", local = TRUE)$value,
   source("RScripts/tables_menu_ui.R", local = TRUE)$value,
 
@@ -94,7 +116,7 @@ ui <- page_navbar(
 
 #### Server ####
 server <- function(input, output, session) {
-  #source("RScripts/state_server.R", local = TRUE)$value
+  source("RScripts/state_server.R", local = TRUE)$value
   source("RScripts/single_server.R", local = TRUE)$value
   source("RScripts/tables_server.R", local = TRUE)$value
 }
