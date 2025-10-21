@@ -48,10 +48,10 @@ outlets <- readRDS("data/pls_outlet_national.rds") %>%
     ),
   )
 
-county_shp <- st_read("data/counties/counties.shp") %>%
+county_shp <- st_read("data/counties/Counties.shp") %>%
   mutate(NAME = str_to_title(NAME))
 county_shp <- st_transform(county_shp, '+proj=longlat +datum=WGS84')
-municipalities <- st_read("data/municipalities/municipalities.shp") %>%
+municipalities <- st_read("data/municipalities/Municipalities.shp") %>%
   mutate(
     NAME = case_when(
       NAME == "Magna City" ~ "Magna",
