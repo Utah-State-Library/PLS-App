@@ -1,4 +1,4 @@
-# Add metadata column in variable key file so that render_table() can detect column type and format accordingly
+# Add metadata column in variable key file so that render_table() can detect column type and format accordingly?
 
 # census data - pop demogs / growth
 # school data - title I, literacy
