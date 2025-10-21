@@ -241,13 +241,16 @@ output$staffworkload_table <- renderReactable({
   staff_handle %>%
     select(Metric, handle) %>%
     reactable(
-      resizable = T,
-      defaultExpanded = F,
-      compact = T,
-      striped = T,
+      resizable = TRUE,
+      defaultExpanded = FALSE,
+      compact = TRUE,
+      highlight = TRUE,
       theme = reactableTheme(
-        backgroundColor = "transparent",
-        headerStyle = list(borderColor = "#555")
+        #highlightColor = "#4EC3E0",
+        headerStyle = list(
+          background = "#ecf0f1",
+          borderColor = "#555"
+        )
       ),
       columns = list(
         Metric = colDef(name = "", minWidth = 150),

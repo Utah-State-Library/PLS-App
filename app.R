@@ -71,7 +71,7 @@ ui <- page_navbar(
             var containerHeight = $(".navbar .container-fluid").height() + "px";
             $(".navbar-brand")
               .append(
-                "<img id = \'www\' src=\'usllogo.jpeg\'" +
+                "<img id = \'www\' src=\'usllogo.jpeg\' role=\'presentation\'" +
                 " height = " + containerHeight + ">"  
               );
             });'

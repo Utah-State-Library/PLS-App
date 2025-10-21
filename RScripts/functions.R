@@ -90,7 +90,7 @@ get_value_over_time_1lib <- function(
     ) %>%
     hc_title(text = paste0(ttext)) %>%
     hc_subtitle(text = unique(df$CURRENT_LIBNAME)) %>%
-    hc_plotOptions(series = list(marker = list(enabled = TRUE)))
+    hc_plotOptions(series = list(marker = list(enabled = TRUE, radius = 7)))
 
   hc
 }
@@ -365,6 +365,13 @@ render_table <- function(
       highlight = TRUE,
       defaultExpanded = FALSE,
       compact = TRUE,
+      theme = reactableTheme(
+        #highlightColor = "#4EC3E0",
+        headerStyle = list(
+          background = "#ecf0f1",
+          borderColor = "#555"
+        )
+      ),
       defaultColDef = colDef(
         align = "left",
         style = if (color_table) {
@@ -372,12 +379,6 @@ render_table <- function(
         } else {
           NULL
         }
-      ),
-      theme = reactableTheme(
-        headerStyle = list(
-          background = "#ecf0f1",
-          borderColor = "#555"
-        )
       ),
       columns = all_columns
     )
@@ -450,6 +451,7 @@ render_pct_change_table <- function(
       defaultExpanded = TRUE,
       compact = TRUE,
       theme = reactableTheme(
+        #highlightColor = "#4EC3E0",
         headerStyle = list(
           background = "#ecf0f1",
           borderColor = "#555"
@@ -676,7 +678,10 @@ render_comparison_hc <- function(
         target_lib
       )
     ) %>%
-    hc_plotOptions(series = list(marker = list(enabled = TRUE))) %>%
+    hc_plotOptions(
+      series = list(marker = list(enabled = TRUE, radius = 7)),
+      line = list(animation = FALSE)
+    ) %>%
     hc_legend(verticalAlign = "top") %>%
     hc_exporting(
       enabled = TRUE,

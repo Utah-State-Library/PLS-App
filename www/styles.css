@@ -2,6 +2,11 @@
     color: #002f6C !important;
 }
 
+.ReactTable .rt-tr:hover {
+    background-color: #4EC3E0 !important;
+    color: #ffffff;
+}
+
 /* Dropdown Styling */
 .bootstrap-select .dropdown-toggle {
     /* Default styles for the pickerInput */
