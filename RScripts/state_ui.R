@@ -78,6 +78,17 @@ nav_panel(
                   `count-selected-text` = "All Library Systems"
                 )
               ),
+              checkboxInput("show_libs", "Show Library Locations?", FALSE),
+              checkboxInput(
+                "show_service",
+                "Show Counties/Cities with Library Service?",
+                TRUE
+              ),
+              checkboxInput(
+                "show_no_service",
+                "Show Counties/Cities without Library Service?",
+                TRUE
+              ),
               actionButton(
                 "submitButton",
                 "Submit",
@@ -98,10 +109,6 @@ nav_panel(
             ),
             leafletOutput("state_map")
           )
-        ),
-        nav_panel(
-          "Areas Without Library Service",
-          leafletOutput("state_map_nolib")
         ),
         nav_panel(
           "Totals",
