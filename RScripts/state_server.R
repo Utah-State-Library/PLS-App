@@ -4,7 +4,7 @@ observe({
   counties <- toupper(input$st_county)
 
   ae_name <- outlets %>%
-    filter(COUNTY %in% input$st_county, FSCSKEY %in% current_FSCS) %>%
+    filter(CNTY %in% input$st_county, FSCSKEY %in% current_FSCS) %>%
     summarise(CURRENT_LIBNAME_AE) %>%
     distinct() %>%
     pull() %>%
