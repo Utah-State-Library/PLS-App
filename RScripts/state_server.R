@@ -1,7 +1,7 @@
 ##### Update Pickers
 
 observe({
-  counties <- toupper(input$st_county)
+  #counties <- toupper(input$st_county)
 
   ae_name <- outlets %>%
     filter(CNTY %in% input$st_county, FSCSKEY %in% current_FSCS) %>%

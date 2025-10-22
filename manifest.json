@@ -4522,7 +4522,7 @@
       "checksum": "9864a2366fd189ea72184a40c22b0358"
     },
     "app.R": {
-      "checksum": "b99f74bd6f7b50e661b5746847380124"
+      "checksum": "8b36284f21978c853768530f5cbb464f"
     },
     "data/counties/Counties.cpg": {
       "checksum": "ae3b3df9970b49b6523e608759bc957d"
@@ -4615,13 +4615,13 @@
       "checksum": "d828775275749701b48bd9d958814111"
     },
     "RScripts/functions.R": {
-      "checksum": "33463e8ee8a657ec759f6361c9296da7"
+      "checksum": "80cd876e34a3fb4ee3026fb5d90582d7"
     },
     "RScripts/graveyard.R": {
       "checksum": "23248f98a4db72afd6ab4e4de2b3cc06"
     },
     "RScripts/lists.R": {
-      "checksum": "9345aabac35b1acf528acfb490c73878"
+      "checksum": "9f07a930f717f403cca9070268dc06d4"
     },
     "RScripts/notes.R": {
       "checksum": "4c3ea22e832ba02f2c61f6bc2b8479a3"
@@ -4633,10 +4633,10 @@
       "checksum": "f870cfc6650e61572ce7b28cdadd75f2"
     },
     "RScripts/state_server.R": {
-      "checksum": "c5f0667e8c64866f381b87f09833a90f"
+      "checksum": "05304520d4a95bdada55b8d128c2a866"
     },
     "RScripts/state_ui.R": {
-      "checksum": "c31a1371907958e0204e79237e5dee6f"
+      "checksum": "ea57808883da829cc0944435d161191c"
     },
     "RScripts/tables_menu_ui.R": {
       "checksum": "98a9aafa54917a04df6691ea54ee2fb0"
