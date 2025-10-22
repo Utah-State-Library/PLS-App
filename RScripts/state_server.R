@@ -27,188 +27,247 @@ observe({
 
 
 ##### Filter Data #####
-mp_FSCS_filtered <- eventReactive(
+map_libs_filtered <- eventReactive(
   input$submitButton,
   {
-    FSCS <- librarykey %>%
+    outlets %>%
       filter(
-        COUNTY %in% input$st_county,
-        ADMINISTRATIVE_ENTITY_NAME %in% input$st_ae
-      ) %>%
-      summarise(FSCS_ID) %>%
-      distinct() %>%
-      pull()
+        CNTY %in% input$st_county,
+        CURRENT_LIBNAME_AE %in% input$st_ae
+      )
   },
   ignoreNULL = FALSE
 )
 
 
-###### Library Map ######
 output$state_map <- renderLeaflet({
-  ## Add certified vs emerging vs other
-
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  map_df <- isolate(map_libs_filtered())
 
-  leaflet_data <- outlets %>%
-    filter(FSCSKEY %in% FSCS)
-
-  county_libs <- leaflet_data %>%
-    filter(str_detect(CURRENT_LIBNAME_AE, "County"))
-
-  leaflet_counties <- county_shp %>%
-    filter(NAME %in% county_libs$CNTY) ## need to filter specifically to county libraries
-
-  leaflet_municipalities <- municipalities %>%
-    filter(NAME %in% leaflet_data$CITY)
-
-  leaflet_data %<>%
-    mutate(
-      LAT = as.numeric(LAT),
-      LONG = as.numeric(LONG),
-      library_info = paste0(
-        "<table>
-                        <div style='font-size: 18px;'><b>",
-        CURRENT_LIBNAME_AE,
-        "</div>
-                        <div style='font-size: 12px;'>",
-        CURRENT_LIBNAME_OUTLET,
-        "</div>
-                        <div style='font-size: 12px;'>",
-        str_to_title(ADDRESS),
-        ", ",
-        str_to_title(CITY),
-        ", ",
-        ZIP,
-        "</div>
-        </table>"
-      )
-    )
-
-  if (nrow(leaflet_data > 0)) {
-    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-      addTiles() %>%
-      addMarkers(
-        data = leaflet_data,
-        lng = ~LONG,
-        lat = ~LAT,
-        label = ~CURRENT_LIBNAME_OUTLET,
-        popup = ~ lapply(library_info, HTML),
-        popupOptions = popupOptions(keepInView = TRUE),
-      ) %>%
-      addProviderTiles(
-        "CartoDB.Positron",
-        group = "CartoDB.Positron"
-      ) %>%
-      setMaxBounds(lng1 = -109, lat1 = 37, lng2 = -114, lat2 = 42) %>%
-      onRender(
-        "function(el, x) {
-          L.control.zoom({position:'bottomright'}).addTo(this);
-        }"
-      ) %>%
-      addPolygons(
-        data = leaflet_counties,
-        label = ~NAME,
-        weight = 1,
-        opacity = 1,
-        color = "#4EC3E0",
-        fillOpacity = 0.7,
-        highlightOptions = highlightOptions(
-          weight = 3,
-          color = "#002F6C",
-          fillOpacity = 0.7
-        )
-      ) %>%
-      addPolygons(
-        data = leaflet_municipalities,
-        label = ~NAME,
-        weight = 1,
-        opacity = 1,
-        color = "#002F6C",
-        fillOpacity = 0.7,
-        highlightOptions = highlightOptions(
-          weight = 3,
-          color = "#4EC3E0",
-          fillOpacity = 0.7
-        )
-      )
-  } else {
-    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-      addTiles() %>%
-      addProviderTiles("CartoDB.Positron", group = "CartoDB.Positron") %>%
-      setMaxBounds(lng1 = -109, lat1 = 37, lng2 = -114, lat2 = 42) %>%
-      onRender(
-        "function(el, x) {
-          L.control.zoom({position:'bottomright'}).addTo(this);
-        }"
-      )
-  }
+  render_map(
+    map_libs_df = map_df,
+    outlets = outlets,
+    county_shp = county_shp,
+    municipalities = municipalities,
+    show_libs = input$show_libs,
+    show_service = input$show_service,
+    show_no_service = input$show_no_service
+  )
 })
 
 
-###### Library Map - No Library Service ######
-output$state_map_nolib <- renderLeaflet({
-  ## Add certified vs emerging vs other
+# ###### Library Map ######
+# output$state_map <- renderLeaflet({
+#   ## Add certified vs emerging vs other
 
-  FSCS <- current_FSCS
+#   input$submitButton
 
-  leaflet_data <- outlets %>%
-    filter(FSCSKEY %in% FSCS)
+#   map_df <- isolate(map_libs_filtered())
 
-  counties_wo_service <- county_shp %>%
-    filter(!NAME %in% leaflet_data$CNTY)
-  counties_w_service <- county_shp %>%
-    filter(NAME %in% leaflet_data$CNTY)
+#   leaflet_data <- outlets %>%
+#     filter(FISCAL_YEAR == current_year) ######### TODO
 
-  municipalities_w_service <- municipalities %>%
-    filter(
-      NAME %in% leaflet_data$CITY
-    )
-  municipalities_wo_service <- municipalities %>%
-    filter(
-      !NAME %in% leaflet_data$CITY,
-      !COUNTYNBR %in% counties_w_service$COUNTYNBR
-    )
+#   county_libs <- leaflet_data %>%
+#     filter(str_detect(CURRENT_LIBNAME_AE, "County"))
 
-  leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-    addTiles() %>%
-    addProviderTiles(
-      "CartoDB.Positron",
-      group = "CartoDB.Positron"
-    ) %>%
-    setMaxBounds(lng1 = -109, lat1 = 37, lng2 = -114, lat2 = 42) %>%
-    onRender(
-      "function(el, x) {
-          L.control.zoom({position:'bottomright'}).addTo(this);
-        }"
-    ) %>%
-    addPolygons(
-      data = counties_wo_service,
-      weight = 1,
-      opacity = 1,
-      color = "#4EC3E0",
-      fillOpacity = 0.7,
-      highlightOptions = highlightOptions(
-        weight = 3,
-        color = "#002F6C",
-        fillOpacity = 0.7
-      )
-    ) %>%
-    addPolygons(
-      data = municipalities_wo_service,
-      weight = 1,
-      opacity = 1,
-      color = "#002F6C",
-      fillOpacity = 0.7,
-      highlightOptions = highlightOptions(
-        weight = 3,
-        color = "#4EC3E0",
-        fillOpacity = 0.7
-      )
-    )
-})
+#   city_libs <- leaflet_data %>%
+#     filter(!str_detect(CURRENT_LIBNAME_AE, "County"))
 
+#   counties_w_service <- county_shp %>%
+#     filter(NAME %in% county_libs$CNTY) ## need to filter specifically to county libraries
+
+#   municipalities_w_service <- municipalities %>%
+#     filter(
+#       NAME %in% city_libs$CITY
+#     )
+
+#   leaflet_data %<>%
+#     mutate(
+#       LAT = as.numeric(LAT),
+#       LONG = as.numeric(LONG),
+#       library_info = paste0(
+#         "<table>
+#                         <div style='font-size: 18px;'><b>",
+#         CURRENT_LIBNAME_AE,
+#         "</div>
+#                         <div style='font-size: 12px;'>",
+#         CURRENT_LIBNAME_OUTLET,
+#         "</div>
+#                         <div style='font-size: 12px;'>",
+#         str_to_title(ADDRESS),
+#         ", ",
+#         str_to_title(CITY),
+#         ", ",
+#         ZIP,
+#         "</div>
+#         </table>"
+#       )
+#     )
+
+#   if (nrow(leaflet_data > 0)) {
+#     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+#       addTiles() %>%
+#       addMarkers(
+#         data = leaflet_data,
+#         lng = ~LONG,
+#         lat = ~LAT,
+#         label = ~CURRENT_LIBNAME_OUTLET,
+#         popup = ~ lapply(library_info, HTML),
+#         popupOptions = popupOptions(keepInView = TRUE),
+#       ) %>%
+#       addProviderTiles(
+#         "CartoDB.Positron",
+#         group = "CartoDB.Positron"
+#       ) %>%
+#       setMaxBounds(lng1 = -109, lat1 = 37, lng2 = -114, lat2 = 42) %>%
+#       onRender(
+#         "function(el, x) {
+#           L.control.zoom({position:'bottomright'}).addTo(this);
+#         }"
+#       ) %>%
+#       addPolygons(
+#         data = counties_w_service,
+#         label = ~NAME,
+#         weight = 1,
+#         opacity = 1,
+#         color = "#4EC3E0",
+#         fillOpacity = 0.7,
+#         highlightOptions = highlightOptions(
+#           weight = 3,
+#           color = "#002F6C",
+#           fillOpacity = 0.7
+#         )
+#       ) %>%
+#       addPolygons(
+#         data = municipalities_w_service,
+#         label = ~NAME,
+#         weight = 1,
+#         opacity = 1,
+#         color = "#002F6C",
+#         fillOpacity = 0.7,
+#         highlightOptions = highlightOptions(
+#           weight = 3,
+#           color = "#4EC3E0",
+#           fillOpacity = 0.7
+#         )
+#       )
+#   } else {
+#     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+#       addTiles() %>%
+#       addProviderTiles("CartoDB.Positron", group = "CartoDB.Positron") %>%
+#       setMaxBounds(lng1 = -109, lat1 = 37, lng2 = -114, lat2 = 42) %>%
+#       onRender(
+#         "function(el, x) {
+#           L.control.zoom({position:'bottomright'}).addTo(this);
+#         }"
+#       )
+#   }
+# })
+
+# ###### Library Map - No Library Service ######
+# output$state_map_nolib <- renderLeaflet({
+#   ## Add certified vs emerging vs other
+
+#   FSCS <- current_FSCS
+
+#   leaflet_data <- outlets %>%
+#     filter(FSCSKEY %in% FSCS)
+
+#   county_libs <- leaflet_data %>%
+#     filter(str_detect(CURRENT_LIBNAME_AE, "County"))
+
+#   city_libs <- leaflet_data %>%
+#     filter(!str_detect(CURRENT_LIBNAME_AE, "County"))
+
+#   bookmobile_counties <- c(
+#     "Utah",
+#     "Iron",
+#     "Garfield", # Multicounty
+#     "Kane", # Multicounty
+#     "Sevier", # Tricounty
+#     "Piute", # Tricounty
+#     "Wayne", # Tricounty
+#     "Beaver" # shared by the 3 cities
+#   )
+#   other_service_counties <- c(
+#     "Beaver" # shared by the 3 cities
+#   )
+
+#   municipalities_w_agreed_service <- c(
+#     "Nibley", # Hyrum City
+#     "Wellsville", # Hyrum City
+#     "East Carbon", # Helper
+#     "Chester", # Ephraim
+#     "Aurora", # Salina
+#     "Redmont" # Salina
+#   )
+
+#   agreed_service_municipalities <- municipalities %>%
+#     filter(NAME %in% municipalities_w_agreed_service)
+
+#   bookmobile_counties2 <- county_shp %>%
+#     filter(NAME %in% bookmobile_counties)
+
+#   counties_wo_service <- county_shp %>%
+#     filter(
+#       !NAME %in% county_libs$CNTY,
+#       !NAME %in% other_service_counties,
+#       !NAME %in% bookmobile_counties
+#     )
+#   counties_w_service <- county_shp %>%
+#     filter(NAME %in% county_libs$CNTY)
+
+#   municipalities_w_service <- municipalities %>%
+#     filter(
+#       NAME %in% city_libs$CITY
+#     )
+#   municipalities_wo_service <- municipalities %>%
+#     filter(
+#       !NAME %in% city_libs$CITY,
+#       !NAME %in% municipalities_w_agreed_service,
+#       !COUNTYNBR %in% counties_w_service$COUNTYNBR,
+#     )
+
+#   leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+#     addTiles() %>%
+#     addProviderTiles(
+#       "CartoDB.Positron",
+#       group = "CartoDB.Positron"
+#     ) %>%
+#     setMaxBounds(lng1 = -109, lat1 = 37, lng2 = -114, lat2 = 42) %>%
+#     onRender(
+#       "function(el, x) {
+#           L.control.zoom({position:'bottomright'}).addTo(this);
+#         }"
+#     ) %>%
+#     addPolygons(
+#       data = counties_wo_service,
+#       label = ~NAME,
+#       weight = 1,
+#       opacity = 1,
+#       color = "#f17f33ff",
+#       fillOpacity = 0.7,
+#       highlightOptions = highlightOptions(
+#         weight = 3,
+#         color = "#f2322bff",
+#         fillOpacity = 0.7
+#       )
+#     ) %>%
+#     addPolygons(
+#       data = municipalities_wo_service,
+#       label = ~NAME,
+#       weight = 1,
+#       opacity = 1,
+#       color = "#f2322bff",
+#       fillOpacity = 0.7,
+#       highlightOptions = highlightOptions(
+#         weight = 3,
+#         color = "#f17f33ff",
+#         fillOpacity = 0.7
+#       )
+#     )
+# })
 
 ###### Per Cap Totals Table ######
 
@@ -291,7 +350,7 @@ output$percap_st <- renderReactable({
 output$m_visitsCY <- renderUI({
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
 
   df <- pls %>%
     filter(FSCSKEY %in% FSCS)
@@ -301,7 +360,7 @@ output$m_visitsCY <- renderUI({
 output$m_visitsPY <- renderUI({
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
 
   df <- pls %>%
     filter(FSCSKEY %in% FSCS)
@@ -311,7 +370,7 @@ output$m_visitsPY <- renderUI({
 output$m_visitschange <- renderUI({
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
 
   df <- pls %>%
     filter(FSCSKEY %in% FSCS)
@@ -324,7 +383,7 @@ output$m_visitschange <- renderUI({
 output$m_regborCY <- renderUI({
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
 
   df <- pls %>%
     filter(FSCSKEY %in% FSCS)
@@ -334,7 +393,7 @@ output$m_regborCY <- renderUI({
 output$m_regborPY <- renderUI({
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
 
   df <- pls %>%
     filter(FSCSKEY %in% FSCS)
@@ -344,7 +403,7 @@ output$m_regborPY <- renderUI({
 output$m_regborchange <- renderUI({
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
 
   df <- pls %>%
     filter(FSCSKEY %in% FSCS)
@@ -357,7 +416,7 @@ output$m_regborchange <- renderUI({
 output$m_popu_lsaCY <- renderUI({
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
 
   df <- pls %>%
     filter(FSCSKEY %in% FSCS)
@@ -367,7 +426,7 @@ output$m_popu_lsaCY <- renderUI({
 output$m_popu_lsaPY <- renderUI({
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
 
   df <- pls %>%
     filter(FSCSKEY %in% FSCS)
@@ -377,7 +436,7 @@ output$m_popu_lsaPY <- renderUI({
 output$m_popu_lsachange <- renderUI({
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
 
   df <- pls %>%
     filter(FSCSKEY %in% FSCS)
@@ -390,7 +449,7 @@ output$m_popu_lsachange <- renderUI({
 output$m_fteCY <- renderUI({
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
 
   df <- pls %>%
     filter(FSCSKEY %in% FSCS)
@@ -400,7 +459,7 @@ output$m_fteCY <- renderUI({
 output$m_ftePY <- renderUI({
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
 
   df <- pls %>%
     filter(FSCSKEY %in% FSCS)
@@ -410,7 +469,7 @@ output$m_ftePY <- renderUI({
 output$m_ftechange <- renderUI({
   input$submitButton
 
-  FSCS <- isolate(mp_FSCS_filtered())
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
 
   df <- pls %>%
     filter(FSCSKEY %in% FSCS)
