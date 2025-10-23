@@ -84,11 +84,6 @@ nav_panel(
                 "Show Counties/Cities with Library Service?",
                 TRUE
               ),
-              checkboxInput(
-                "show_no_service",
-                "Show Counties/Cities without Library Service?",
-                TRUE
-              ),
               actionButton(
                 "submitButton",
                 "Submit",
