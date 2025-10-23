@@ -50,11 +50,11 @@ outlets <- readRDS("data/pls_outlet_national.rds") %>%
 
 ## NOTE Do not delete any files in the shape file folders! Even though they're not read in directly, they are still used when reading in the data
 
-county_shp <- st_read("data/counties/Counties.shp") %>%
+county_shp <- sf::st_read("data/counties/Counties.shp") %>%
   mutate(NAME = str_to_title(NAME))
-county_shp <- st_transform(county_shp, '+proj=longlat +datum=WGS84')
+county_shp <- sf::st_transform(county_shp, '+proj=longlat +datum=WGS84')
 
-municipalities <- st_read("data/municipalities/Municipalities.shp") %>%
+municipalities <- sf::st_read("data/municipalities/Municipalities.shp") %>%
   mutate(
     NAME = case_when(
       NAME == "Magna City" ~ "Magna",
@@ -62,7 +62,7 @@ municipalities <- st_read("data/municipalities/Municipalities.shp") %>%
       .default = NAME
     )
   )
-municipalities <- st_transform(municipalities, '+proj=longlat +datum=WGS84')
+municipalities <- sf::st_transform(municipalities, '+proj=longlat +datum=WGS84')
 
 #### Input Lists ####
 source("RScripts/lists.R", local = TRUE)

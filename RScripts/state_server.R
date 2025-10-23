@@ -5,7 +5,7 @@ observe({
 
   ae_name <- outlets %>%
     filter(CNTY %in% input$st_county, FSCSKEY %in% current_FSCS) %>%
-    summarise(CURRENT_LIBNAME_AE) %>%
+    reframe(CURRENT_LIBNAME_AE) %>%
     distinct() %>%
     pull() %>%
     sort()

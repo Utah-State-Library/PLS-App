@@ -109,11 +109,11 @@ nav_panel(
             ),
             leafletOutput("state_map")
           )
-        ),
-        nav_panel(
-          "Totals",
-          reactableOutput("percap_st")
-        )
+        ) #,
+        # nav_panel(
+        #   "Totals",
+        #   reactableOutput("percap_st")
+        # )
       )
     ),
 
