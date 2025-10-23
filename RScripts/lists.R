@@ -3,7 +3,7 @@
 current_year <- max(as.numeric(pls$FISCAL_YEAR))
 
 years <- pls %>%
-  summarise(unique(FISCAL_YEAR)) %>%
+  reframe(unique(FISCAL_YEAR)) %>%
   pull() %>%
   sort(decreasing = TRUE)
 
@@ -20,18 +20,18 @@ libnames <- pls %>%
 
 current_FSCS <- pls %>%
   filter(FISCAL_YEAR == current_year, hide_lib == 0) %>%
-  summarise(FSCSKEY) %>%
+  reframe(FSCSKEY) %>%
   unique() %>%
   pull()
 
 counties <- outlets %>%
-  summarise(unique(CNTY)) %>%
+  reframe(unique(CNTY)) %>%
   pull() %>%
   sort()
 
 ae_name <- outlets %>%
   filter(FSCSKEY %in% current_FSCS) %>%
-  summarise(unique(CURRENT_LIBNAME_AE)) %>%
+  reframe(unique(CURRENT_LIBNAME_AE)) %>%
   pull() %>%
   sort()
 
