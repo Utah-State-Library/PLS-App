@@ -23,6 +23,28 @@ observe({
   )
 })
 
+observe({
+  updateCheckboxInput(
+    session,
+    "show_libs",
+    "Show Library Locations?",
+    if (!input$show_service) {
+      TRUE
+    }
+  )
+})
+
+observe({
+  updateCheckboxInput(
+    session,
+    "show_service",
+    "Show Counties/Cities with Library Service?",
+    if (!input$show_libs) {
+      TRUE
+    }
+  )
+})
+
 
 ##### Filter Data #####
 map_libs_filtered <- eventReactive(

@@ -1,147 +1,125 @@
 nav_panel(
-  title = "State Overview",
+  title = tags$h4(class = "fw-bold", "State Overview"),
+  class = " bg-body-secondary mx-0 my-2 py-0 px-0 border rounded-3",
 
-  layout_columns(
-    col_widths = c(9, 3),
-    fillable = TRUE,
+  layout_sidebar(
+    sidebar = sidebar(
+      width = "20%",
 
+      div(
+        class = "mb-2",
+        tags$h5(class = "mb-1 mt-0", "Select Libraries by County"),
+        pickerInput(
+          "st_county",
+          label = NULL,
+          choices = counties,
+          selected = counties,
+          multiple = TRUE,
+          options = list(
+            `live-search` = TRUE,
+            `actions-box` = TRUE,
+            `selected-text-format` = paste0(
+              "count > ",
+              length(counties) - 1
+            ),
+            `count-selected-text` = "All Counties"
+          )
+        )
+      ),
+      div(
+        class = "mb-2",
+        tags$h5(class = "mb-1 mt-0", "Select Libraries by System"),
+        pickerInput(
+          "st_ae",
+          label = NULL,
+          choices = ae_name,
+          selected = ae_name,
+          multiple = TRUE,
+          options = list(
+            `live-search` = TRUE,
+            `actions-box` = TRUE,
+            `selected-text-format` = paste0(
+              "count > ",
+              length(ae_name) - 1
+            ),
+            `count-selected-text` = "All Library Systems"
+          )
+        )
+      ),
+      div(
+        class = "mb-2",
+        tags$h5(class = "mb-1 mt-0", "Map Controls"),
+        checkboxInput(
+          "show_libs",
+          "Show Library Locations?",
+          FALSE
+        ),
+        checkboxInput(
+          "show_service",
+          "Show Counties/Cities with Library Service?",
+          TRUE
+        )
+      ),
+      actionButton(
+        "submitButton",
+        "Submit",
+        #style="background-color: #3d4766",
+        width = "100%"
+      )
+    ),
     layout_columns(
-      fillable = TRUE,
-      col_widths = c(12, 12),
-      # selectInput(
-      #   "libname",
-      #   "",
-      #   choices = libnames,
-      #   selected = libnames[1]
-      # ),
-      # card(
-      #   max_height = 60,
-      #   h4("State of Utah - Public Libraries")
-      # ),
-      # layout_columns(
-      #   height = 700,
-      #   fillable = TRUE,
-      #   col_widths = c(8,4),
-      #   layout_columns(
-      #     fillable = TRUE,
-      #     col_widths = c(12),
-      #     card(
-      #       height = 500,
-      #       full_screen = TRUE,
-      #       leafletOutput("state_map")
-      #     )
-      #   ),
-      #
-      #   card(
-      #     reactableOutput("percap_st")
-      #   )
+      col_widths = c(9, 3),
 
       navset_card_tab(
         title = "Utah Public Libraries",
+
         #height = 700,
         full_screen = TRUE,
-
         nav_panel(
           "Map",
-          layout_sidebar(
-            sidebar = sidebar(
-              width = "30%",
-              pickerInput(
-                "st_county",
-                "Select Libraries by County",
-                choices = counties,
-                selected = counties,
-                multiple = TRUE,
-                options = list(
-                  `live-search` = TRUE,
-                  `actions-box` = TRUE,
-                  `selected-text-format` = paste0(
-                    "count > ",
-                    length(counties) - 1
-                  ),
-                  `count-selected-text` = "All Counties"
-                )
-              ),
-              pickerInput(
-                "st_ae",
-                "Select Libraries by System",
-                choices = ae_name,
-                selected = ae_name,
-                multiple = TRUE,
-                options = list(
-                  `live-search` = TRUE,
-                  `actions-box` = TRUE,
-                  `selected-text-format` = paste0(
-                    "count > ",
-                    length(ae_name) - 1
-                  ),
-                  `count-selected-text` = "All Library Systems"
-                )
-              ),
-              checkboxInput("show_libs", "Show Library Locations?", FALSE),
-              checkboxInput(
-                "show_service",
-                "Show Counties/Cities with Library Service?",
-                TRUE
-              ),
-              actionButton(
-                "submitButton",
-                "Submit",
-                #style="background-color: #3d4766",
-                width = "100%"
-              )
-              # pickerInput(
-              #   "st_popgroup",
-              #   "Select Libraries by Population Group",
-              #   choices = population_groups,
-              #   selected = population_groups,
-              #   options = list(`live-search`=TRUE,
-              #                  `actions-box` = TRUE,
-              #                  `selected-text-format` = paste0("count > ", length(population_groups) -1),
-              #                  `count-selected-text` = "All Population Groups"
-              #   )
-              # )
-            ),
-            leafletOutput("state_map")
-          )
-        ) #,
-        # nav_panel(
-        #   "Totals",
-        #   reactableOutput("percap_st")
-        # )
-      )
-    ),
+          class = "container-fluid",
 
-    layout_columns(
-      fill = FALSE,
-      col_widths = c(12, 12, 12, 12),
-      value_box(
-        title = "Annual Visits",
-        value = htmlOutput("m_visitsCY"),
-        htmlOutput("m_visitsPY"),
-        htmlOutput("m_visitschange"),
-        showcase = bs_icon("people-fill")
+          leafletOutput("state_map") |>
+            withSpinner() |>
+            as_fill_carrier() # shinycssloaders messes with fill, this fixes
+        )
       ),
-      value_box(
-        title = "Population of Legal Service Area",
-        value = htmlOutput("m_popu_lsaCY"),
-        htmlOutput("m_popu_lsaPY"),
-        htmlOutput("m_popu_lsachange"),
-        showcase = bs_icon("houses")
-      ),
-      value_box(
-        title = "Registered Borrowers",
-        value = htmlOutput("m_regborCY"),
-        htmlOutput("m_regborPY"),
-        htmlOutput("m_regborchange"),
-        showcase = bs_icon("person-vcard")
-      ),
-      value_box(
-        title = "FTE",
-        value = htmlOutput("m_fteCY"),
-        htmlOutput("m_ftePY"),
-        htmlOutput("m_ftechange"),
-        showcase = bs_icon("file-person")
+
+      layout_columns(
+        fill = FALSE,
+        col_widths = c(12, 12, 12, 12),
+        value_box(
+          title = "Annual Visits",
+          value = htmlOutput("m_visitsCY"),
+          htmlOutput("m_visitsPY"),
+          htmlOutput("m_visitschange"),
+          showcase = bs_icon("people-fill"),
+          theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
+        ),
+        value_box(
+          title = "Population of Legal Service Area",
+          value = htmlOutput("m_popu_lsaCY"),
+          htmlOutput("m_popu_lsaPY"),
+          htmlOutput("m_popu_lsachange"),
+          showcase = bs_icon("houses"),
+          theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
+        ),
+        value_box(
+          title = "Registered Borrowers",
+          value = htmlOutput("m_regborCY"),
+          htmlOutput("m_regborPY"),
+          htmlOutput("m_regborchange"),
+          showcase = bs_icon("person-vcard"),
+          theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
+        ),
+        value_box(
+          title = "FTE",
+          value = htmlOutput("m_fteCY"),
+          htmlOutput("m_ftePY"),
+          htmlOutput("m_ftechange"),
+          showcase = bs_icon("file-person"),
+          theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
+        )
       )
     )
   )

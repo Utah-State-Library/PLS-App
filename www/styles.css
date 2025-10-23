@@ -12,7 +12,6 @@
     /* Default styles for the pickerInput */
     background-color: #002F6C !important;
     color: #ffffff;
-    font-family: "Raleway", sans-serif;
 }
 
 .bootstrap-select .dropdown-toggle:hover {
@@ -33,7 +32,6 @@
 .btn-default {
     background-color: #002F6C !important;
     color: #ffffff;
-    font-family: "Raleway", sans-serif;
 }
 
 .btn-default:hover {
@@ -44,4 +42,38 @@
 
 body {
     font-family: "Raleway", sans-serif;
+}
+
+
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+    margin-top: 0;
+    margin-bottom: 0rem;
+}
+
+/* Target dropdown nav links */
+.nav-item.dropdown>.nav-link {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between;
+    /* keeps caret on right */
+    gap: 0.5rem;
+}
+
+/* Adjust caret alignment */
+.nav-item.dropdown>.nav-link::after {
+    position: relative;
+    top: 0;
+    /* center it vertically */
+    margin-left: 0.25rem;
 }

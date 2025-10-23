@@ -1,6 +1,9 @@
 nav_menu(
-  "Data Tables",
-  icon = bsicons::bs_icon("table", class = "icon-color"),
+  title = div(
+    class = "d-flex align-items-center gap-2",
+    bsicons::bs_icon("table", class = "icon-color fs-4"),
+    tags$h4(class = "fw-bold mb-0", "Data Tables")
+  ),
 
   nav_panel(
     title = "All Libraries",
