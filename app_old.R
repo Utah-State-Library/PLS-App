@@ -18,7 +18,6 @@ library(sjmisc)
 library(htmlwidgets)
 library(shinya11y)
 library(sf)
-library(thematic)
 
 #### Color Palette ####
 head_color <- "#002F6C"
@@ -71,7 +70,6 @@ municipalities <- sf::st_read("data/municipalities/Municipalities.shp") %>%
 #### Input Lists ####
 source("RScripts/lists.R", local = TRUE)
 source("RScripts/data_prep.R", local = TRUE)
-source("RScripts/theme.R", local = TRUE)
 
 #### Functions ####
 source("RScripts/functions.R", local = TRUE)
@@ -79,41 +77,22 @@ source("RScripts/functions.R", local = TRUE)
 
 #### UI ####
 
-ui <- fluidPage(
-  class = "container-fluid mx-0 px-0",
-  theme = usl_theme,
-
-  div(
-    class = "container-fluid text-center mx-0 px-0",
-    div(
-      class = "row justify-content-center",
-      div(
-        class = "col-12 col-md-8 col-lg-8 align-self-center py-2 my-2 px-2 mx-2 bg-body-tertiary rounded-3",
-        tags$h1(class = "display-5 fw-bold", "Utah Libraries Data Dashboard"),
-        p(
-          class = "fs-5",
-          "Welcome to the Utah Libraries Data Dashboard! This tool helps library directors, city and county council members, and Utahns understand library service statewide."
-        )
-      )
-    )
+ui <- page_navbar(
+  title = "",
+  #theme = bs_theme(preset = "sandstone"),
+  navbar_options = navbar_options(
+    bg = NULL,
+    underline = TRUE
   ),
-  #end Container
 
-  page_navbar(
-    title = "",
-    navbar_options = navbar_options(
-      bg = NULL,
-      underline = TRUE
-    ),
+  #### USL Logo in Header ####
+  shiny::includeCSS("www/styles.css"),
+  use_tota11y(), # for accessibility checking - remove/comment out in final product
 
-    #### USL Logo in Header ####
-    shiny::includeCSS("www/styles.css"),
-    use_tota11y(), # for accessibility checking - remove/comment out in final product
-
-    tags$head(
-      tags$script(
-        HTML(
-          '
+  tags$head(
+    tags$script(
+      HTML(
+        '
           $(document).ready(function() {
             $(".navbar-brand").replaceWith(
               $("<a target=\'_blank\' rel=\'noopener noreferrer\' class = \'navbar-brand\' href = \'https://library.utah.gov/\'></a>")
@@ -125,14 +104,20 @@ ui <- fluidPage(
                 " height = " + containerHeight + ">"  
               );
             });'
-        )
       )
-    ),
+    )
+  ),
 
-    source("RScripts/state_ui.R", local = TRUE)$value,
-    source("RScripts/single_ui.R", local = TRUE)$value,
-    source("RScripts/tables_menu_ui.R", local = TRUE)$value,
-  )
+  source("RScripts/state_ui.R", local = TRUE)$value,
+  source("RScripts/single_ui.R", local = TRUE)$value,
+  source("RScripts/tables_menu_ui.R", local = TRUE)$value,
+
+  ## To put links and whatnot at the right of the navbar at some point
+  # nav_spacer(),
+  # nav_panel(
+  #   shiny::icon("circle-info"),
+  #   markdown("Learn more about [htmlwidgets](http://www.htmlwidgets.org/)")
+  # )
 )
 
 

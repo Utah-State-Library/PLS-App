@@ -1,26 +1,33 @@
 nav_panel(
-  title = "Single Library",
+  title = tags$h4(class = "fw-bold", "Single Library"),
+  class = " bg-body-secondary mx-0 my-2 py-0 px-0 border rounded-3",
 
   layout_sidebar(
     sidebar = sidebar(
-      width = "25%",
+      width = "20%",
 
-      #uiOutput("conditional_inputs.single"),
-
-      pickerInput(
-        "library.single",
-        "Library Name",
-        choices = libnames,
-        selected = libnames[1],
-        multiple = FALSE
+      div(
+        class = "mb-2",
+        tags$h5(class = "mb-1 mt-0", "Select a Library"),
+        pickerInput(
+          "library.single",
+          label = NULL,
+          choices = libnames,
+          selected = libnames[1],
+          multiple = FALSE
+        )
       ),
-      pickerInput(
-        "year.single",
-        "Fiscal Year",
-        choices = years,
-        selected = max(years),
-        multiple = FALSE
-      )
+      div(
+        class = "mb-2",
+        tags$h5(class = "mb-1 mt-0", "Select a Year"),
+        pickerInput(
+          "year.single",
+          label = NULL,
+          choices = years,
+          selected = max(years),
+          multiple = FALSE
+        )
+      ),
     ),
 
     #### Main Body ####
