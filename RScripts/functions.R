@@ -692,80 +692,25 @@ render_comparison_hc <- function(
 
 #### Map! ####
 
-###### Library Map - No Library Service ######
-
 render_map <- function(
   map_libs_df,
   outlets = outlets,
   county_shp = "",
   municipalities = "",
   show_libs = T,
-  show_service = F,
-  show_no_service = F
+  show_service = F
 ) {
-  # Predefined lists (in "./RScripts/lists.R")
-  bookmobile_counties <- bookmobile_counties
-  other_service_counties <- other_service_counties
-  municipalities_w_agreed_service <- municipalities_w_agreed_service
-  # municipalities <- municipalities
-  # county_shp <- county_shp
+  # Pre-done map dfs so they don't have to run each time the map is updated
+  agreed_service_municipalities_map <- agreed_service_municipalities_map
+  other_service_counties_map <- other_service_counties_map
+  bookmobile_counties_map <- bookmobile_counties_map
+  counties_wo_service_map <- counties_wo_service_map
+  counties_w_service_map <- counties_w_service_map
+  municipalities_wo_service_map <- municipalities_wo_service_map
+  map_all <- map_all
 
-  outlets <- outlets %>% filter(FISCAL_YEAR == current_year)
-
-  map_all <- map_libs_df %>%
-    mutate(
-      LAT = as.numeric(LAT),
-      LONG = as.numeric(LONG),
-      library_info = paste0(
-        "<table>
-                        <div style='font-size: 18px;'><b>",
-        CURRENT_LIBNAME_AE,
-        "</div>
-                        <div style='font-size: 12px;'>",
-        CURRENT_LIBNAME_OUTLET,
-        "</div>
-                        <div style='font-size: 12px;'>",
-        str_to_title(ADDRESS),
-        ", ",
-        str_to_title(CITY),
-        ", ",
-        ZIP,
-        "</div>
-        </table>"
-      )
-    )
-
-  county_libs <- outlets %>%
-    filter(str_detect(CURRENT_LIBNAME_AE, "County"))
-  city_libs <- outlets %>%
-    filter(!str_detect(CURRENT_LIBNAME_AE, "County"))
-
-  agreed_service_municipalities <- municipalities %>%
-    filter(NAME %in% municipalities_w_agreed_service)
-
-  bookmobile_counties_map <- county_shp %>%
-    filter(NAME %in% bookmobile_counties)
-
-  counties_wo_service <- county_shp %>%
-    filter(
-      !NAME %in% county_libs$CNTY &
-        !NAME %in% other_service_counties &
-        !NAME %in% bookmobile_counties
-    )
-  counties_w_service <- county_shp %>%
-    filter(NAME %in% county_libs$CNTY)
-
-  municipalities_w_service <- municipalities %>%
-    filter(
-      NAME %in% city_libs$CITY
-    )
-  municipalities_wo_service <- municipalities %>%
-    filter(
-      !NAME %in% city_libs$CITY &
-        !NAME %in% municipalities_w_agreed_service &
-        !COUNTYNBR %in% bookmobile_counties_map$COUNTYNBR &
-        !COUNTYNBR %in% counties_w_service$COUNTYNBR
-    )
+  map_all <- map_all %>%
+    filter(CURRENT_LIBNAME_AE %in% map_libs_df$CURRENT_LIBNAME_AE)
 
   map <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     addTiles() %>%
@@ -787,16 +732,16 @@ render_map <- function(
         data = map_all,
         lng = ~LONG,
         lat = ~LAT,
-        label = ~CURRENT_LIBNAME_OUTLET,
-        popup = ~ lapply(library_info, HTML),
+        label = ~ lapply(library_info, HTML),
+        #popup = ~ lapply(library_info, HTML),
         popupOptions = popupOptions(keepInView = TRUE),
       )
   }
   if (show_service) {
     map <- map %>%
       addPolygons(
-        data = counties_w_service,
-        label = ~NAME,
+        data = counties_w_service_map,
+        label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
         color = "#4EC3E0",
@@ -809,8 +754,8 @@ render_map <- function(
         options = pathOptions(pane = "county_pane")
       ) %>%
       addPolygons(
-        data = municipalities_w_service,
-        label = ~NAME,
+        data = municipalities_w_service_map,
+        label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
         color = "#002F6C",
@@ -823,22 +768,36 @@ render_map <- function(
         options = pathOptions(pane = "city_pane")
       ) %>%
       addPolygons(
-        data = agreed_service_municipalities,
-        label = ~NAME,
+        data = agreed_service_municipalities_map,
+        label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
-        color = "#a40089ff",
+        color = "#f632f3ff",
         fillOpacity = 0.7,
         highlightOptions = highlightOptions(
           weight = 3,
-          color = "#f632f3ff",
+          color = "#a40089ff",
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "city_pane")
       ) %>%
       addPolygons(
+        data = other_service_counties_map,
+        label = ~ lapply(service_label, HTML),
+        weight = 1,
+        opacity = 1,
+        color = "#f632f3ff",
+        fillOpacity = 0.7,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#a40089ff",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "county_pane")
+      ) %>%
+      addPolygons(
         data = bookmobile_counties_map,
-        label = ~NAME,
+        label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
         color = "#08f476ff",
@@ -849,13 +808,10 @@ render_map <- function(
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "county_pane")
-      )
-  }
-  if (show_no_service) {
-    map <- map %>%
+      ) %>%
       addPolygons(
-        data = counties_wo_service,
-        label = ~NAME,
+        data = counties_wo_service_map,
+        label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
         color = "#f17f33ff",
@@ -868,8 +824,8 @@ render_map <- function(
         options = pathOptions(pane = "county_pane")
       ) %>%
       addPolygons(
-        data = municipalities_wo_service,
-        label = ~NAME,
+        data = municipalities_wo_service_map,
+        label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
         color = "#f2322bff",
@@ -880,12 +836,34 @@ render_map <- function(
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "city_pane")
+      ) %>%
+      addLegend(
+        position = c("topright"),
+        colors = c(
+          "#4EC3E0",
+          "#002F6C",
+          #"#a40089ff",
+          "#f632f3ff",
+          "#08f476ff",
+          "#f17f33ff",
+          "#f2322bff"
+        ),
+        opacity = 0.7,
+        labels = c(
+          "County Library Service",
+          "City Library Service",
+          #"Agreed Service with Other City Libraries",
+          "Agreed Service Through a City Library",
+          "Bookmobile Library Service",
+          "No County Library Service",
+          "No City Library Service"
+        )
       )
   }
-
   map
 }
 
+## testing
 # render_map(
 #   map_libs_df = outlets,
 #   outlets = outlets,

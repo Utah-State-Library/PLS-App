@@ -36,10 +36,13 @@ options(highcharter.lang = hcoptslang)
 pls <- readRDS("data/pls_national.rds") %>%
   filter(STABR == "UT", !str_detect(CURRENT_LIBNAME, "Bookmobile")) %>%
   mutate(CNTY = str_to_title(CNTY), CITY = str_to_title(CITY))
+
+current_year <- max(as.numeric(pls$FISCAL_YEAR))
+
 variable_key <- read.csv("data/pls_variable_key.csv")
-#librarykey <- readRDS("data/librarykey.rds")
+
 outlets <- readRDS("data/pls_outlet_national.rds") %>%
-  filter(STABR == "UT", hide_lib == 0) %>%
+  filter(STABR == "UT", hide_lib == 0, FISCAL_YEAR == current_year) %>%
   mutate(
     CITY = case_when(
       CITY == "South Salt Lake City" ~ "South Salt Lake",
@@ -51,8 +54,8 @@ outlets <- readRDS("data/pls_outlet_national.rds") %>%
 ## NOTE Do not delete any files in the shape file folders! Even though they're not read in directly, they are still used when reading in the data
 
 county_shp <- sf::st_read("data/counties/Counties.shp") %>%
-  mutate(NAME = str_to_title(NAME))
-county_shp <- sf::st_transform(county_shp, '+proj=longlat +datum=WGS84')
+  mutate(NAME = str_to_title(NAME)) %>%
+  sf::st_transform('+proj=longlat +datum=WGS84')
 
 municipalities <- sf::st_read("data/municipalities/Municipalities.shp") %>%
   mutate(
@@ -61,11 +64,12 @@ municipalities <- sf::st_read("data/municipalities/Municipalities.shp") %>%
       NAME == "South Salt Lake City" ~ "South Salt Lake",
       .default = NAME
     )
-  )
-municipalities <- sf::st_transform(municipalities, '+proj=longlat +datum=WGS84')
+  ) %>%
+  sf::st_transform('+proj=longlat +datum=WGS84')
 
 #### Input Lists ####
 source("RScripts/lists.R", local = TRUE)
+source("RScripts/data_prep.R", local = TRUE)
 
 #### Functions ####
 source("RScripts/functions.R", local = TRUE)

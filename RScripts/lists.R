@@ -1,7 +1,5 @@
 #### Input Lists ####
 
-current_year <- max(as.numeric(pls$FISCAL_YEAR))
-
 years <- pls %>%
   reframe(unique(FISCAL_YEAR)) %>%
   pull() %>%
@@ -67,28 +65,4 @@ currency_cols <- c(
   "STGVT",
   "FEDGVT",
   "OTHINCM"
-)
-
-#### Mapping Related Counties and Cities
-bookmobile_counties <- c(
-  "Utah",
-  "Iron",
-  "Garfield", # Multicounty
-  "Kane", # Multicounty
-  "Sevier", # Tricounty
-  "Piute", # Tricounty
-  "Wayne", # Tricounty
-  "Beaver" # shared by the 3 cities
-)
-other_service_counties <- c(
-  "Beaver" # shared by the 3 cities
-)
-
-municipalities_w_agreed_service <- c(
-  "Nibley", # Hyrum City
-  "Wellsville", # Hyrum City
-  "East Carbon", # Helper
-  "Chester", # Ephraim
-  "Aurora", # Salina
-  "Redmont" # Salina
 )
