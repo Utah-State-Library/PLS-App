@@ -1,11 +1,12 @@
 nav_panel(
-  title = tags$h4(class = "fw-bold", "Single Library"),
-  class = " bg-body-secondary mx-0 my-2 py-0 px-0 border rounded-3",
+  title = tags$h5(class = "fw-bold", "Single Library"),
+  class = " bg-body-secondary align-self-center m-1 p-0 border rounded-3",
+  style = "width: 95vw; height: 92vh; padding: 0; margin: 1;",
 
   layout_sidebar(
+    fill = TRUE,
     sidebar = sidebar(
-      width = "20%",
-
+      width = "25%",
       div(
         class = "mb-2",
         tags$h5(class = "mb-1 mt-0", "Select a Library"),
@@ -34,8 +35,7 @@ nav_panel(
 
     navset_card_tab(
       id = "active_tab_single",
-      height = 700,
-      full_screen = TRUE,
+      #fill = TRUE,
       nav_panel(
         "Overview",
         uiOutput("library_header.single"),
@@ -48,7 +48,8 @@ nav_panel(
             htmlOutput("visitsPY"),
             htmlOutput("visitschange"),
             showcase = bsicons::bs_icon("people-fill"),
-            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
+            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C"),
+            class = "p-0 nopad"
           ),
           value_box(
             title = htmlOutput("regborTitle"),
@@ -56,7 +57,8 @@ nav_panel(
             htmlOutput("regborPY"),
             htmlOutput("regborchange"),
             showcase = bsicons::bs_icon("person-vcard"),
-            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
+            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C"),
+            class = "p-0 nopad"
           ),
           value_box(
             title = htmlOutput("popu_lsaTitle"),
@@ -64,7 +66,8 @@ nav_panel(
             htmlOutput("popu_lsaPY"),
             htmlOutput("popu_lsachange"),
             showcase = bsicons::bs_icon("houses"),
-            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
+            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C"),
+            class = "p-0 nopad"
           ),
           value_box(
             title = htmlOutput("totcirTitle"),
@@ -72,7 +75,8 @@ nav_panel(
             htmlOutput("totcirPY"),
             htmlOutput("totcirchange"),
             showcase = bsicons::bs_icon("bookmark-check"),
-            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
+            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C"),
+            class = "p-0 nopad"
           ),
           value_box(
             title = htmlOutput("totincmTitle"),
@@ -80,7 +84,8 @@ nav_panel(
             htmlOutput("totincmPY"),
             htmlOutput("totincmchange"),
             showcase = bsicons::bs_icon("currency-dollar"),
-            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
+            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C"),
+            class = "p-0 nopad"
           ),
           value_box(
             title = htmlOutput("fteTitle"),
@@ -88,7 +93,8 @@ nav_panel(
             htmlOutput("ftePY"),
             htmlOutput("ftechange"),
             showcase = bsicons::bs_icon("file-person"),
-            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
+            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C"),
+            class = "p-0 nopad"
           )
         )
       ),

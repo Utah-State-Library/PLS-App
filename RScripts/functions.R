@@ -720,7 +720,7 @@ render_map <- function(
       "CartoDB.Positron",
       group = "CartoDB.Positron"
     ) %>%
-    setMaxBounds(lng1 = -109, lat1 = 37, lng2 = -114, lat2 = 42) %>%
+    #setMaxBounds(lng1 = -109, lat1 = 37, lng2 = -114, lat2 = 42) %>%
     onRender(
       "function(el, x) {
           L.control.zoom({position:'bottomright'}).addTo(this);

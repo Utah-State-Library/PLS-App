@@ -77,3 +77,25 @@ h6,
     /* center it vertically */
     margin-left: 0.25rem;
 }
+
+div.nopad .value-box-area {
+    padding-top: .75rem;
+    padding-bottom: .25rem;
+    margin-bottom: 0.75rem;
+}
+
+div.nopadnomarg .value-box-area {
+    padding-top: .75rem;
+    padding-bottom: .25rem;
+    margin-bottom: 0;
+}
+
+/* www/styles.css */
+html body .accordion .my-bg-secondary .accordion-button {
+    background-color: var(--bs-body-secondary) !important;
+    color: var(--bs-body-color) !important;
+}
+
+html body .accordion .my-bg-secondary .accordion-body {
+    background-color: var(--bs-body-secondary) !important;
+}
