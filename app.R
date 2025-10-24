@@ -80,15 +80,16 @@ source("RScripts/functions.R", local = TRUE)
 #### UI ####
 
 ui <- fluidPage(
-  class = "container-fluid mx-0 px-0",
+  class = "container-fluid align-self-center mx-1 px-0",
+  style = "width: 95vw; height: 95vh; padding: 0; margin: 1;",
   theme = usl_theme,
 
   div(
-    class = "container-fluid text-center mx-0 px-0",
+    class = "container-fluid text-center mx-1 px-0",
     div(
       class = "row justify-content-center",
       div(
-        class = "col-12 col-md-8 col-lg-8 align-self-center py-2 my-2 px-2 mx-2 bg-body-tertiary rounded-3",
+        class = "col-12 col-md-8 col-lg-8 align-self-center py-0 my-1 px-0 mx-1 bg-body-tertiary rounded-3",
         tags$h1(class = "display-5 fw-bold", "Utah Libraries Data Dashboard"),
         p(
           class = "fs-5",
@@ -131,7 +132,7 @@ ui <- fluidPage(
 
     source("RScripts/state_ui.R", local = TRUE)$value,
     source("RScripts/single_ui.R", local = TRUE)$value,
-    source("RScripts/tables_menu_ui.R", local = TRUE)$value,
+    source("RScripts/tables_menu_ui.R", local = TRUE)$value
   )
 )
 

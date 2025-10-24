@@ -1,10 +1,12 @@
 nav_panel(
-  title = tags$h4(class = "fw-bold", "State Overview"),
-  class = " bg-body-secondary mx-0 my-2 py-0 px-0 border rounded-3",
+  title = tags$h5(class = "fw-bold", "State Overview"),
+  class = " bg-body-secondary align-self-center m-1 p-0 border rounded-3",
+  style = "width: 95vw; height: 92vh; padding: 0; margin: 1;",
 
   layout_sidebar(
+    fill = TRUE,
     sidebar = sidebar(
-      width = "20%",
+      width = "25%",
 
       div(
         class = "mb-2",
@@ -67,58 +69,62 @@ nav_panel(
         width = "100%"
       )
     ),
-    layout_columns(
-      col_widths = c(9, 3),
-
-      navset_card_tab(
-        title = "Utah Public Libraries",
-
-        #height = 700,
-        full_screen = TRUE,
-        nav_panel(
-          "Map",
-          class = "container-fluid",
-
-          leafletOutput("state_map") |>
-            withSpinner() |>
-            as_fill_carrier() # shinycssloaders messes with fill, this fixes
-        )
-      ),
-
+    div(
+      #style = "max-height: 100vh; overflow-y: auto;",
       layout_columns(
-        fill = FALSE,
-        col_widths = c(12, 12, 12, 12),
-        value_box(
-          title = "Annual Visits",
-          value = htmlOutput("m_visitsCY"),
-          htmlOutput("m_visitsPY"),
-          htmlOutput("m_visitschange"),
-          showcase = bs_icon("people-fill"),
-          theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
+        col_widths = c(8, 4),
+        fill = TRUE,
+        class = "p-0 m-0",
+        navset_card_tab(
+          title = "Utah Public Libraries",
+          full_screen = TRUE,
+          nav_panel(
+            "Map",
+            class = "container-fluid",
+            leafletOutput("state_map") |> withSpinner() |> as_fill_carrier()
+          )
         ),
-        value_box(
-          title = "Population of Legal Service Area",
-          value = htmlOutput("m_popu_lsaCY"),
-          htmlOutput("m_popu_lsaPY"),
-          htmlOutput("m_popu_lsachange"),
-          showcase = bs_icon("houses"),
-          theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
-        ),
-        value_box(
-          title = "Registered Borrowers",
-          value = htmlOutput("m_regborCY"),
-          htmlOutput("m_regborPY"),
-          htmlOutput("m_regborchange"),
-          showcase = bs_icon("person-vcard"),
-          theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
-        ),
-        value_box(
-          title = "FTE",
-          value = htmlOutput("m_fteCY"),
-          htmlOutput("m_ftePY"),
-          htmlOutput("m_ftechange"),
-          showcase = bs_icon("file-person"),
-          theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
+        layout_columns(
+          fill = TRUE,
+          class = "p-0 m-0",
+          #gap = ".75rem",
+          col_widths = c(12, 12, 12, 12),
+          value_box(
+            title = "Annual Visits",
+            value = htmlOutput("m_visitsCY"),
+            htmlOutput("m_visitsPY"),
+            htmlOutput("m_visitschange"),
+            showcase = bs_icon("people-fill"),
+            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C"),
+            class = "p-0 nopad"
+          ),
+          value_box(
+            title = "Population of Legal Service Area",
+            value = htmlOutput("m_popu_lsaCY"),
+            htmlOutput("m_popu_lsaPY"),
+            htmlOutput("m_popu_lsachange"),
+            showcase = bs_icon("houses"),
+            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C"),
+            class = "p-0 nopad"
+          ),
+          value_box(
+            title = "Registered Borrowers",
+            value = htmlOutput("m_regborCY"),
+            htmlOutput("m_regborPY"),
+            htmlOutput("m_regborchange"),
+            showcase = bs_icon("person-vcard"),
+            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C"),
+            class = "p-0 nopad"
+          ),
+          value_box(
+            title = "FTE",
+            value = htmlOutput("m_fteCY"),
+            htmlOutput("m_ftePY"),
+            htmlOutput("m_ftechange"),
+            showcase = bs_icon("file-person"),
+            theme = value_box_theme(bg = "#ffffff", fg = "#002f6C"),
+            class = "p-0 nopadnomarg"
+          )
         )
       )
     )
