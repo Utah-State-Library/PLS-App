@@ -40,9 +40,7 @@ pls <- readRDS("data/pls_national.rds") %>%
 
 current_year <- max(as.numeric(pls$FISCAL_YEAR))
 
-census <- read.csv(
-  "I:/CCSL-Library/Public Libraries/Data Coordinator/(PLS) Public Library Statistics/2025/sub-est2024_49.csv"
-) %>%
+census <- read.csv("data/census.csv") %>%
   select(COUNTY, PLACE, NAME, POPULATION = contains(as.character(current_year)))
 
 variable_key <- read.csv("data/pls_variable_key.csv")
