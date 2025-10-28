@@ -95,27 +95,6 @@ get_value_over_time_1lib <- function(
   hc
 }
 
-
-# per_capita_fmt <- function(popu_lsa = POPU_LSA,
-#                            col,
-#                            label = FALSE)
-#   {
-#
-#   if (!label){
-#     if(col %in% c("TOTSTAFF", "GPTERMS", "HOTSPOT")){
-#       (col / popu_lsa) * 1000
-#     } else {
-#       (col / popu_lsa)
-#     }
-#   } else if (label) {
-#     if(col %in% c("TOTSTAFF", "GPTERMS", "HOTSPOT")){
-#       "Per 1000"
-#     } else {
-#       "Per Capita"
-#     }
-#   }
-# }
-
 get_nclosest <- function(df, n, libname, pg_col, percap = FALSE) {
   # use pls as df
   per1000_cols <- per1000_cols
@@ -361,12 +340,11 @@ render_table <- function(
     arrange(across(all_of(arrange_call), ~ desc(.))) %>%
     reactable(
       resizable = TRUE,
-      pagination = !peer, # base pagination on if it's a peer table or not (peer tables are not paginated)
+      pagination = FALSE, #!peer, # base pagination on if it's a peer table or not (peer tables are not paginated)
       highlight = TRUE,
       defaultExpanded = FALSE,
       compact = TRUE,
       theme = reactableTheme(
-        #highlightColor = "#4EC3E0",
         headerStyle = list(
           background = "#ecf0f1",
           borderColor = "#555"
@@ -451,7 +429,6 @@ render_pct_change_table <- function(
       defaultExpanded = TRUE,
       compact = TRUE,
       theme = reactableTheme(
-        #highlightColor = "#4EC3E0",
         headerStyle = list(
           background = "#ecf0f1",
           borderColor = "#555"
@@ -698,9 +675,10 @@ render_map <- function(
   county_shp = "",
   municipalities = "",
   show_libs = T,
-  show_service = F
+  show_service = T
 ) {
   # Pre-done map dfs so they don't have to run each time the map is updated
+  # Made in /data_prep.R
   agreed_service_municipalities_map <- agreed_service_municipalities_map
   other_service_counties_map <- other_service_counties_map
   bookmobile_counties_map <- bookmobile_counties_map
@@ -715,7 +693,7 @@ render_map <- function(
   map <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     addTiles() %>%
     addMapPane("county_pane", zIndex = 420) %>%
-    addMapPane("city_pane", zIndex = 430) %>% # Labels will be on top
+    addMapPane("city_pane", zIndex = 430) %>% # Cities will be on top
     addProviderTiles(
       "CartoDB.Positron",
       group = "CartoDB.Positron"
@@ -842,7 +820,6 @@ render_map <- function(
         colors = c(
           "#4EC3E0",
           "#002F6C",
-          #"#a40089ff",
           "#f632f3ff",
           "#08f476ff",
           "#f17f33ff",
@@ -852,7 +829,6 @@ render_map <- function(
         labels = c(
           "County Library Service",
           "City Library Service",
-          #"Agreed Service with Other City Libraries",
           "Agreed Service Through a City Library",
           "Bookmobile Library Service",
           "No County Library Service",
@@ -870,6 +846,5 @@ render_map <- function(
 #   county_shp = county_shp,
 #   municipalities = municipalities,
 #   show_libs = F,
-#   show_service = T,
-#   show_no_service = T
+#   show_service = T
 # )

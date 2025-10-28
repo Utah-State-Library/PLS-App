@@ -23,6 +23,9 @@ observe({
   )
 })
 
+
+## Update map control checkboxes so that there is always one library layer showing
+# else it defaults to the endless world and no one wants that
 observe({
   updateCheckboxInput(
     session,
@@ -46,6 +49,83 @@ observe({
 })
 
 
+# #### Define Columns ####
+
+# table_columns_state <- list(
+#   "Overview" = c(
+#     "TOTINCM",
+#     "TOTSTAFF",
+#     "VLNT",
+#     "VLNT_HRS",
+#     "VISITS",
+#     "REGBOR",
+#     "TOTCIR",
+#     "TOTPHYS",
+#     "GPTERMS",
+#     "TOTPRO",
+#     "TOTATTEN"
+#   ),
+#   "Revenue" = c("TOTINCM", "LOCGVT", "STGVT", "FEDGVT", "OTHINCM"),
+#   "Total Expenditures" = c("TOTOPEXP", "STAFFEXP", "TOTEXPCO", "OTHOPEXP"),
+#   "Staff Expenditures" = c("TOTOPEXP", "STAFFEXP", "SALARIES", "BENEFIT"),
+#   "Collection Expenditures" = c(
+#     "TOTOPEXP",
+#     "TOTEXPCO",
+#     "PRMATEXP",
+#     "ELMATEXP",
+#     "OTHMATEX"
+#   ),
+#   "Circulation" = c(
+#     "TOTCIR",
+#     "PHYSCIR",
+#     "KIDCIRCL",
+#     "ELMATCIR",
+#     "HOTSPOT_CIRC",
+#     "OTHPHCIR",
+#     "EBOOK_CIR",
+#     "EAUDIO_CIR",
+#     "EVIDEO_CIR",
+#     "ESERIAL_CIR"
+#   ),
+#   "Collections" = c("TOTPHYS", "BKVOL", "AUDIO_PH", "VIDEO_PH", "OTHMATS"),
+#   "Number of Programs" = c(
+#     "TOTPRO",
+#     "K0_5PRO",
+#     "K6_11PRO",
+#     "YAPRO",
+#     "ADULTPRO",
+#     "GENPRO"
+#   ),
+#   "Program Attendance" = c(
+#     "TOTATTEN",
+#     "K0_5ATTEN",
+#     "K6_11ATTEN",
+#     "YAATTEN",
+#     "ADULTATTEN",
+#     "GENATTEN"
+#   ),
+#   "Visits, Borrowers, Reference, and ILL" = c(
+#     "VISITS",
+#     "REFERENC",
+#     "REGBOR",
+#     "LOANTO",
+#     "LOANFM"
+#   ),
+#   "Internet Access" = c(
+#     "GPTERMS",
+#     "PITUSR",
+#     "WIFISESS",
+#     "HOTSPOT",
+#     "HOTSPOT_CIRC"
+#   )
+# )
+
+# all_cols_state <- reactive({
+#   req(input$table_selection_state)
+
+#   table_columns_state[[input$table_selection_state]]
+# })
+
 ##### Filter Data #####
 map_libs_filtered <- eventReactive(
   input$submitButton,
@@ -60,6 +140,7 @@ map_libs_filtered <- eventReactive(
 )
 
 
+#### Render State Map ####
 output$state_map <- renderLeaflet({
   input$submitButton
 
@@ -75,78 +156,18 @@ output$state_map <- renderLeaflet({
   )
 })
 
-###### Per Cap Totals Table ######
 
-output$percap_st <- renderReactable({
-  cols <- c(
-    "VISITS",
-    "REGBOR",
-    "TOTSTAFF",
-    "TOTSTAFF",
-    "VLNT",
-    "REFERENC",
-    "TOTCIR",
-    "TOTPHYS",
-    "LOANFM",
-    "TOTPRO",
-    "TOTATTEN",
-    "PITUSR",
-    "WIFISESS"
+#### Render Percent Change Tables ####
+output$table_state <- renderReactable({
+  req(state_all_libs)
+
+  render_pct_change_table(
+    df = state_all_libs,
+    variable_key = variable_key,
+    year = current_year,
+    cols = all_cols_state(),
+    percap = input$percap.state
   )
-
-  df <- pls %>%
-    filter(FISCAL_YEAR == current_year) %>%
-    filter(CURRENT_LIBNAME == "All Libraries") %>%
-    select(POPU_LSA, cols) %>%
-    pivot_longer(-c(POPU_LSA), names_to = "METRIC", values_to = "VALUE") %>%
-    mutate(
-      VALUE = as.numeric(VALUE),
-      POPU_LSA = as.numeric(POPU_LSA),
-      PER_CAP = round(VALUE / POPU_LSA, 2)
-    ) %>%
-    ungroup() %>%
-    select(METRIC, VALUE, PER_CAP)
-
-  df %<>%
-    mutate(
-      METRIC = case_when(
-        METRIC == "REGBOR" ~ "Registered Borrowers",
-        METRIC == "VISITS" ~ "Visits",
-        METRIC == "TOTSTAFF" ~ "FTE",
-        METRIC == "VLNT" ~ "Volunteers",
-        METRIC == "REFERENC" ~ "Reference Transactions",
-        METRIC == "TOTCIR" ~ "Total Circulation",
-        METRIC == "TOTPHYS" ~ "Physical Books",
-        METRIC == "LOANFM" ~ "Inter Library Loans",
-        METRIC == "TOTPRO" ~ "Number of Programs",
-        METRIC == "TOTATTEN" ~ "Program Attendance",
-        METRIC == "PITUSR" ~ "Public Computer Sessions",
-        METRIC == "WIFISESS" ~ "Wifi Sessions"
-      )
-    )
-
-  df %>%
-    reactable(
-      resizable = T,
-      defaultExpanded = F,
-      compact = T,
-      striped = T,
-      defaultColDef = colDef(
-        align = "left",
-      ),
-      theme = reactableTheme(
-        backgroundColor = "transparent",
-        headerStyle = list(
-          #background = "#ecf0f1",
-          borderColor = "#555"
-        )
-      ),
-      columns = list(
-        METRIC = colDef(name = ""),
-        VALUE = colDef(name = "Total", format = colFormat(separators = TRUE)),
-        PER_CAP = colDef(name = "Per Capita")
-      )
-    )
 })
 
 
@@ -250,6 +271,69 @@ output$m_popu_lsachange <- renderUI({
   get_valuebox(df, year = current_year, "POPU_LSA", pull = "change")
 })
 
+###### Circulation ######
+output$m_totcirCY <- renderUI({
+  input$submitButton
+
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
+
+  df <- pls %>%
+    filter(FSCSKEY %in% FSCS)
+
+  get_valuebox(df, year = current_year, "TOTCIR", pull = "CY")
+})
+output$m_totcirPY <- renderUI({
+  input$submitButton
+
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
+
+  df <- pls %>%
+    filter(FSCSKEY %in% FSCS)
+
+  get_valuebox(df, year = current_year, "TOTCIR", pull = "PY")
+})
+output$m_totcirchange <- renderUI({
+  input$submitButton
+
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
+
+  df <- pls %>%
+    filter(FSCSKEY %in% FSCS)
+
+  get_valuebox(df, year = current_year, "TOTCIR", pull = "change")
+})
+
+###### Revenue ######
+output$m_totincmCY <- renderUI({
+  input$submitButton
+
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
+
+  df <- pls %>%
+    filter(FSCSKEY %in% FSCS)
+
+  get_valuebox(df, year = current_year, "TOTINCM", pull = "CY")
+})
+output$m_totincmPY <- renderUI({
+  input$submitButton
+
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
+
+  df <- pls %>%
+    filter(FSCSKEY %in% FSCS)
+
+  get_valuebox(df, year = current_year, "TOTINCM", pull = "PY")
+})
+output$m_totincmchange <- renderUI({
+  input$submitButton
+
+  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
+
+  df <- pls %>%
+    filter(FSCSKEY %in% FSCS)
+
+  get_valuebox(df, year = current_year, "TOTINCM", pull = "change")
+})
 
 ###### FTE ######
 output$m_fteCY <- renderUI({

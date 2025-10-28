@@ -4,7 +4,7 @@
 
 .ReactTable .rt-tr:hover {
     background-color: #4EC3E0 !important;
-    color: #ffffff;
+    /* color: #ffffff; */
 }
 
 /* Dropdown Styling */
@@ -24,7 +24,7 @@
 /* To style specific elements within the pickerInput, like dropdown items */
 .dropdown-item:hover {
     background-color: #4EC3E0 !important;
-    color: #ffffff;
+    /* color: #ffffff; */
 }
 
 
