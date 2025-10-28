@@ -6,7 +6,9 @@ nav_panel(
   layout_sidebar(
     fill = TRUE,
     sidebar = sidebar(
+      title = "Filters",
       width = "25%",
+
       div(
         class = "mb-2",
         tags$h5(class = "mb-1 mt-0", "Select a Library"),
@@ -35,7 +37,6 @@ nav_panel(
 
     navset_card_tab(
       id = "active_tab_single",
-      #fill = TRUE,
       nav_panel(
         "Overview",
         uiOutput("library_header.single"),
