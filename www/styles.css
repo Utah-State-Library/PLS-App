@@ -99,3 +99,8 @@ html body .accordion .my-bg-secondary .accordion-button {
 html body .accordion .my-bg-secondary .accordion-body {
     background-color: var(--bs-body-secondary) !important;
 }
+
+.legend {
+    z-index: 400 !important;
+    /* set a lower z-index */
+}

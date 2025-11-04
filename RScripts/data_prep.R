@@ -9,6 +9,7 @@
 #3) county_shp
 
 #### Mapping Related Counties and Cities - update if needed
+
 bookmobile_counties <- data.frame(
   CNTY = c(
     "Utah",
@@ -21,7 +22,7 @@ bookmobile_counties <- data.frame(
   )
 ) %>%
   mutate(
-    service_provider = case_when(
+    bookmobile_service = case_when(
       CNTY == "Utah" ~ "Utah County Bookmobile",
       CNTY == "Iron" ~ "Iron County Bookmobile",
       CNTY %in% c("Garfield", "Kane") ~ "MultiCounty Bookmobile",
@@ -29,14 +30,14 @@ bookmobile_counties <- data.frame(
     )
   )
 
-other_service_counties <- data.frame(
+agreed_service_counties <- data.frame(
   CNTY = "Beaver" # shared by the 3 cities
 ) %>%
   mutate(
-    service_provider = "Beaver, Milford, and Minersville Libraries"
+    agreed_service_county = "Beaver, Milford, and Minersville Libraries"
   )
 
-municipalities_w_agreed_service <- data.frame(
+agreed_service_city <- data.frame(
   CITY = c(
     "Nibley", # Hyrum City
     "Wellsville", # Hyrum City
@@ -47,7 +48,7 @@ municipalities_w_agreed_service <- data.frame(
   )
 ) %>%
   mutate(
-    service_provider = case_when(
+    agreed_service_city = case_when(
       CITY %in% c("Nibley", "Wellsville") ~ "Hyrum Library",
       CITY == "East Carbon" ~ "Helper City Library",
       CITY == "Chester" ~ "Ephraim City Library",
@@ -58,7 +59,7 @@ municipalities_w_agreed_service <- data.frame(
 county_libs <- outlets %>%
   filter(SERVICE_AREA == "county") %>%
   select(
-    CURRENT_LIBNAME_AE,
+    county_service = CURRENT_LIBNAME_AE,
     CNTY
   ) %>%
   distinct()
@@ -66,169 +67,102 @@ county_libs <- outlets %>%
 city_libs <- outlets %>%
   filter(SERVICE_AREA == "city") %>%
   select(
-    CURRENT_LIBNAME_AE,
+    city_service = CURRENT_LIBNAME_AE,
     CITY
   ) %>%
   distinct()
 
-
 ##### Make Map dfs #####
-agreed_service_municipalities_map <- municipalities %>%
-  filter(NAME %in% municipalities_w_agreed_service$CITY) %>%
-  left_join(municipalities_w_agreed_service, by = c("NAME" = "CITY")) %>%
-  mutate(
-    service_label = paste0(
-      "<table>
-                      <div style='font-size: 18px;'><b>",
-      NAME,
-      "</div>
-                      <div style='font-size: 12px;'>",
-      "Population: ",
-      POPULATION,
-      "</div>
-                      <div style='font-size: 12px;'>",
-      "Library Service Provider: ",
-      service_provider,
-      "</div>
-      </table>"
-    )
-  )
 
-other_service_counties_map <- county_shp %>%
-  filter(NAME %in% other_service_counties$CNTY) %>%
-  left_join(other_service_counties, by = c("NAME" = "CNTY")) %>%
-  mutate(
-    service_label = paste0(
-      "<table>
-                <div style='font-size: 18px;'><b>",
-      NAME,
-      " County",
-      "</div>
-        <div style='font-size: 12px;'>",
-      "Population: ",
-      POPULATION,
-      "</div>
-        <div style='font-size: 12px;'>",
-      "Library Service Provider: ",
-      service_provider,
-      "</div>
-</table>"
-    )
-  )
+## Make a crosswalk df to get county names into the municipality df
+county_xwalk <- county_shp %>%
+  select(CNTY = NAME, COUNTYNBR) %>%
+  st_drop_geometry()
 
-bookmobile_counties_map <- county_shp %>%
-  filter(NAME %in% bookmobile_counties$CNTY) %>%
-  left_join(bookmobile_counties, by = c("NAME" = "CNTY")) %>%
-  mutate(,
-    service_label = paste0(
-      "<table>
-                      <div style='font-size: 18px;'><b>",
-      NAME,
-      " County",
-      "</div>
-        <div style='font-size: 12px;'>",
-      "Population: ",
-      POPULATION,
-      "</div>
-                      <div style='font-size: 12px;'>",
-      "Library Service Provider: ",
-      service_provider,
-      "</div>
-      </table>"
-    )
-  )
-
-counties_wo_service_map <- county_shp %>%
-  filter(
-    !NAME %in% county_libs$CNTY &
-      !NAME %in% other_service_counties$CNTY &
-      !NAME %in% bookmobile_counties$CNTY
-  ) %>%
-  mutate(
-    service_label = paste0(
-      "<table>
-                    <div style='font-size: 18px;'><b>",
-      NAME,
-      " County",
-      "</div>
-        <div style='font-size: 12px;'>",
-      "Population: ",
-      POPULATION,
-      "</div>
-                    <div style='font-size: 12px;'>",
-      "No County Library Service",
-      "</div>
-    </table>"
-    )
-  )
-
-counties_w_service_map <- county_shp %>%
-  filter(NAME %in% county_libs$CNTY) %>%
+## Create the county map df
+county_map <- county_shp %>%
   left_join(county_libs, by = c("NAME" = "CNTY")) %>%
+  left_join(bookmobile_counties, by = c("NAME" = "CNTY")) %>%
+  left_join(agreed_service_counties, by = c("NAME" = "CNTY")) %>%
+  mutate(across(
+    c(county_service, bookmobile_service, agreed_service_county),
+    ~ ifelse(is.na(.), "None", .)
+  )) %>%
   mutate(
     service_label = paste0(
       "<table>
-                        <div style='font-size: 18px;'><b>",
+                          <div style='font-size: 18px;'><b>",
       NAME,
-      " County",
       "</div>
-        <div style='font-size: 12px;'>",
+                          <div style='font-size: 12px;'>",
       "Population: ",
       POPULATION,
       "</div>
-                        <div style='font-size: 12px;'>",
-      "Library Service Provider: ",
-      CURRENT_LIBNAME_AE,
+                          <div style='font-size: 12px;'>",
+      "County Library Service: ",
+      county_service,
       "</div>
-        </table>"
+          <div style='font-size: 12px;'>",
+      "Bookmobile Service: ",
+      bookmobile_service,
+      "</div>
+          <div style='font-size: 12px;'>",
+      "Agreed Service: ",
+      agreed_service_county,
+      "</div>
+          </table>"
     )
   )
 
-municipalities_w_service_map <- municipalities %>%
-  filter(NAME %in% city_libs$CITY) %>%
+## Create the city map df
+municipalities_map <- municipalities %>%
+  left_join(county_xwalk, by = "COUNTYNBR") %>%
+  left_join(county_libs, by = "CNTY") %>%
+  left_join(bookmobile_counties, by = "CNTY") %>%
+  left_join(agreed_service_counties, by = "CNTY") %>%
+  left_join(agreed_service_city, by = c("NAME" = "CITY")) %>%
   left_join(city_libs, by = c("NAME" = "CITY")) %>%
+  mutate(across(
+    c(
+      county_service,
+      bookmobile_service,
+      agreed_service_county,
+      agreed_service_city,
+      city_service
+    ),
+    ~ ifelse(is.na(.), "None", .)
+  )) %>%
   mutate(
     service_label = paste0(
       "<table>
                         <div style='font-size: 18px;'><b>",
       NAME,
       "</div>
-        <div style='font-size: 12px;'>",
+                        <div style='font-size: 12px;'>",
       "Population: ",
       POPULATION,
       "</div>
                         <div style='font-size: 12px;'>",
-      "Library Service Provider: ",
-      CURRENT_LIBNAME_AE,
+      "City Library Service: ",
+      city_service,
+      "</div>
+        <div style='font-size: 12px;'>",
+      "County Library Service: ",
+      county_service,
+      "</div>
+        <div style='font-size: 12px;'>",
+      "Bookmobile Service: ",
+      bookmobile_service,
+      "</div>
+        <div style='font-size: 12px;'>",
+      "Agreed Service: ",
+      agreed_service_city,
       "</div>
         </table>"
     )
   )
 
-municipalities_wo_service_map <- municipalities %>%
-  filter(
-    !NAME %in% city_libs$CITY &
-      !NAME %in% municipalities_w_agreed_service$CITY &
-      !COUNTYNBR %in% bookmobile_counties_map$COUNTYNBR &
-      !COUNTYNBR %in% counties_w_service_map$COUNTYNBR
-  ) %>%
-  mutate(
-    service_label = paste0(
-      "<table>
-                    <div style='font-size: 18px;'><b>",
-      NAME,
-      "</div>
-        <div style='font-size: 12px;'>",
-      "Population: ",
-      POPULATION,
-      "</div>
-                    <div style='font-size: 12px;'>",
-      "No City Library Service",
-      "</div>
-    </table>"
-    )
-  )
-
+## Create the library locations df
 map_all <- outlets %>%
   mutate(
     LAT = as.numeric(LAT),
@@ -269,6 +203,14 @@ map_all <- outlets %>%
         )
     )
   )
+
+rm(
+  agreed_service_city,
+  agreed_service_counties,
+  bookmobile_counties,
+  county_libs,
+  city_libs
+)
 
 
 #### Statewide Per Cap Table ####

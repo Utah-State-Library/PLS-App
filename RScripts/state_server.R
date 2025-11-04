@@ -26,24 +26,31 @@ observe({
 
 ## Update map control checkboxes so that there is always one library layer showing
 # else it defaults to the endless world and no one wants that
-observe({
+observeEvent(input$submitButton, {
   updateCheckboxInput(
     session,
     "show_libs",
     "Show Library Locations?",
-    if (!input$show_service) {
+    if (is.null(input$service_areas)) {
       TRUE
     }
   )
 })
 
-observe({
-  updateCheckboxInput(
+observeEvent(input$submitButton, {
+  updatePickerInput(
     session,
-    "show_service",
-    "Show Counties/Cities with Library Service?",
+    "service_areas",
+    label = NULL,
     if (!input$show_libs) {
-      TRUE
+      selected = c(
+        "County Library Service",
+        "City Library Service",
+        "Agreed Service Through a City Library",
+        "Bookmobile Library Service",
+        "No County Library Service",
+        "No City Library Service"
+      )
     }
   )
 })
@@ -139,20 +146,47 @@ map_libs_filtered <- eventReactive(
   ignoreNULL = FALSE
 )
 
+county_map_df <- eventReactive(
+  input$submitButton,
+  {
+    county_map %>% filter(NAME %in% input$st_county)
+  },
+  ignoreNULL = FALSE
+)
+
+municipalities_map_df <- eventReactive(
+  input$submitButton,
+  {
+    municipalities_map %>% filter(CNTY %in% input$st_county)
+  },
+  ignoreNULL = FALSE
+)
+
+service_areas_picker <- eventReactive(
+  input$submitButton,
+  {
+    input$service_areas
+  },
+  ignoreNULL = FALSE
+)
+
 
 #### Render State Map ####
 output$state_map <- renderLeaflet({
   input$submitButton
 
   map_df <- isolate(map_libs_filtered())
+  county_df_p <- isolate(county_map_df())
+  municipalities_df_p <- isolate(municipalities_map_df())
+  service_areas_p <- isolate(service_areas_picker())
 
   render_map(
     map_libs_df = map_df,
     outlets = outlets,
-    county_shp = county_shp,
-    municipalities = municipalities,
+    county_map = county_df_p,
+    municipalities_map = municipalities_df_p,
     show_libs = input$show_libs,
-    show_service = input$show_service
+    service_areas = service_areas_p
   )
 })
 

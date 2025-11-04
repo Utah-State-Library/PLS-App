@@ -22,8 +22,8 @@ current_FSCS <- pls %>%
   unique() %>%
   pull()
 
-counties <- outlets %>%
-  reframe(unique(CNTY)) %>%
+counties <- county_shp %>%
+  reframe(unique(NAME)) %>%
   pull() %>%
   sort()
 
