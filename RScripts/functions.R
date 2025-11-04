@@ -672,24 +672,61 @@ render_comparison_hc <- function(
 render_map <- function(
   map_libs_df,
   outlets = outlets,
-  county_shp = "",
-  municipalities = "",
+  county_map = county_map,
+  municipalities_map = municipalities_map,
   show_libs = T,
-  show_service = T
+  #show_service = T,
+  service_areas = NULL
 ) {
   # Pre-done map dfs so they don't have to run each time the map is updated
   # Made in /data_prep.R
-  agreed_service_municipalities_map <- agreed_service_municipalities_map
-  other_service_counties_map <- other_service_counties_map
-  bookmobile_counties_map <- bookmobile_counties_map
-  counties_wo_service_map <- counties_wo_service_map
-  counties_w_service_map <- counties_w_service_map
-  municipalities_wo_service_map <- municipalities_wo_service_map
   map_all <- map_all
+
+  service_areas_legend <- data.frame(
+    colors = c(
+      "#4EC3E0",
+      "#002F6C",
+      "#f632f3ff",
+      "#08f476ff",
+      "#f17f33ff",
+      "#f2322bff"
+    ),
+    labels = c(
+      "County Library Service",
+      "City Library Service",
+      "Agreed Service Through a City Library",
+      "Bookmobile Library Service",
+      "No County Library Service",
+      "No City Library Service"
+    )
+  ) %>%
+    filter(labels %in% service_areas)
 
   map_all <- map_all %>%
     filter(CURRENT_LIBNAME_AE %in% map_libs_df$CURRENT_LIBNAME_AE)
 
+  county_libs_map <- county_map %>% filter(county_service != "None")
+  city_libs_map <- municipalities_map %>% filter(city_service != "None")
+  agreed_service_city_map <- municipalities_map %>%
+    filter(agreed_service_city != "None")
+  agreed_service_county_map <- county_map %>%
+    filter(agreed_service_county != "None")
+  bookmobile_service_map <- county_map %>% filter(bookmobile_service != "None")
+  no_county_service_map <- county_map %>%
+    filter(
+      county_service == "None" &
+        bookmobile_service == "None" &
+        agreed_service_county == "None"
+    )
+  no_city_service_map <- municipalities_map %>%
+    filter(
+      city_service == "None" &
+        county_service == "None" &
+        bookmobile_service == "None" &
+        agreed_service_city == "None"
+    )
+
+  ## Set base map
   map <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     addTiles() %>%
     addMapPane("county_pane", zIndex = 420) %>%
@@ -704,6 +741,8 @@ render_map <- function(
           L.control.zoom({position:'bottomright'}).addTo(this);
         }"
     )
+
+  ## Show Library Locations
   if (show_libs) {
     map <- map %>%
       addMarkers(
@@ -715,10 +754,12 @@ render_map <- function(
         popupOptions = popupOptions(keepInView = TRUE),
       )
   }
-  if (show_service) {
+
+  ## Show County Library Service Areas
+  if ("County Library Service" %in% service_areas & nrow(county_libs_map) > 0) {
     map <- map %>%
       addPolygons(
-        data = counties_w_service_map,
+        data = county_libs_map,
         label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
@@ -730,9 +771,14 @@ render_map <- function(
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "county_pane")
-      ) %>%
+      )
+  }
+
+  ## Show City Library Service Areas
+  if ("City Library Service" %in% service_areas & nrow(city_libs_map) > 0) {
+    map <- map %>%
       addPolygons(
-        data = municipalities_w_service_map,
+        data = city_libs_map,
         label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
@@ -744,9 +790,18 @@ render_map <- function(
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "city_pane")
-      ) %>%
+      )
+  }
+
+  ## Show Agreed Service
+  if (
+    "Agreed Service Through a City Library" %in%
+      service_areas &
+      nrow(agreed_service_city_map) > 0
+  ) {
+    map <- map %>%
       addPolygons(
-        data = agreed_service_municipalities_map,
+        data = agreed_service_city_map,
         label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
@@ -758,9 +813,16 @@ render_map <- function(
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "city_pane")
-      ) %>%
+      )
+  }
+  if (
+    "Agreed Service Through a City Library" %in%
+      service_areas &
+      nrow(agreed_service_county_map) > 0
+  ) {
+    map <- map %>%
       addPolygons(
-        data = other_service_counties_map,
+        data = agreed_service_county_map,
         label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
@@ -772,9 +834,18 @@ render_map <- function(
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "county_pane")
-      ) %>%
+      )
+  }
+
+  ## Show Bookmobile Service
+  if (
+    "Bookmobile Library Service" %in%
+      service_areas &
+      nrow(bookmobile_service_map) > 0
+  ) {
+    map <- map %>%
       addPolygons(
-        data = bookmobile_counties_map,
+        data = bookmobile_service_map,
         label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
@@ -786,9 +857,18 @@ render_map <- function(
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "county_pane")
-      ) %>%
+      )
+  }
+
+  ## Show Counties without Library Service
+  if (
+    "No County Library Service" %in%
+      service_areas &
+      nrow(no_county_service_map) > 0
+  ) {
+    map <- map %>%
       addPolygons(
-        data = counties_wo_service_map,
+        data = no_county_service_map,
         label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
@@ -800,9 +880,16 @@ render_map <- function(
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "county_pane")
-      ) %>%
+      )
+  }
+
+  ## Show Cities without Library Service
+  if (
+    "No City Library Service" %in% service_areas & nrow(no_city_service_map) > 0
+  ) {
+    map <- map %>%
       addPolygons(
-        data = municipalities_wo_service_map,
+        data = no_city_service_map,
         label = ~ lapply(service_label, HTML),
         weight = 1,
         opacity = 1,
@@ -814,28 +901,20 @@ render_map <- function(
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "city_pane")
-      ) %>%
-      addLegend(
-        position = c("topright"),
-        colors = c(
-          "#4EC3E0",
-          "#002F6C",
-          "#f632f3ff",
-          "#08f476ff",
-          "#f17f33ff",
-          "#f2322bff"
-        ),
-        opacity = 0.7,
-        labels = c(
-          "County Library Service",
-          "City Library Service",
-          "Agreed Service Through a City Library",
-          "Bookmobile Library Service",
-          "No County Library Service",
-          "No City Library Service"
-        )
       )
   }
+
+  ## Show Legend if Service Areas are Selected
+  if (!is.null(service_areas)) {
+    map <- map %>%
+      addLegend(
+        position = c("topright"),
+        colors = service_areas_legend$colors,
+        opacity = 0.7,
+        labels = service_areas_legend$labels
+      )
+  }
+
   map
 }
 
@@ -843,8 +922,9 @@ render_map <- function(
 # render_map(
 #   map_libs_df = outlets,
 #   outlets = outlets,
-#   county_shp = county_shp,
-#   municipalities = municipalities,
+#   county_map = county_map,
+#   municipalities_map = municipalities_map,
 #   show_libs = F,
-#   show_service = T
+#   #show_service = T
+#   service_areas = c("County Library Service", "No County Library Service", "Bookmobile Library Service", "Agreed Service Through a City Library")
 # )

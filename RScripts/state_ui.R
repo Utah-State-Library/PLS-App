@@ -57,10 +57,40 @@ nav_panel(
           "Show Library Locations?",
           FALSE
         ),
-        checkboxInput(
-          "show_service",
-          "Show Counties/Cities with Library Service?",
-          TRUE
+        # checkboxInput(
+        #   "show_service",
+        #   "Show Counties/Cities with Library Service?",
+        #   TRUE
+        # )
+        pickerInput(
+          "service_areas",
+          label = NULL,
+          choices = c(
+            "County Library Service",
+            "City Library Service",
+            "Agreed Service Through a City Library",
+            "Bookmobile Library Service",
+            "No County Library Service",
+            "No City Library Service"
+          ),
+          selected = c(
+            "County Library Service",
+            "City Library Service",
+            "Agreed Service Through a City Library",
+            "Bookmobile Library Service",
+            "No County Library Service",
+            "No City Library Service"
+          ),
+          multiple = T,
+          options = list(
+            `live-search` = TRUE,
+            `actions-box` = TRUE,
+            `selected-text-format` = paste0(
+              "count > ",
+              length(6) - 1
+            ),
+            `count-selected-text` = "All Service Areas"
+          )
         )
       ),
       actionButton(
