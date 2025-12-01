@@ -1,3 +1,55 @@
+##### Functions #####
+
+# We'll use these functions throughout the shiny app to cut down on repetition and to make adjustments more easily
+
+### List of Functions
+
+## get_valuebox()
+# - this function pulls either the current year (CY), previous year (PY) or percent change for a given value. The function handles the years, so no need to pipe in a df that is year - 1 when pulling the PY value
+# - Used in state_server.R and single_server.R
+
+## get_value_over_time_1lib()
+# - this plots a given value for a given library over time using highcharter
+# - used???
+
+## get_n_closest()
+# - this takes a given target library and a given value for which to find the closest N libraries based on that value; can handle per capita
+# - used in the peer data tables page
+
+## csvDownloadButton()
+# - download handler for reactable objects
+# - used on the data tables page mostly
+# - update single and state for downloading reactables there
+
+## format_currency_cells()
+# - helper function for the render_table() function - formats reactable cells for currency
+
+## format_currency_2_decimals()
+# - ???
+
+## render_table()
+# - renders a reactable for given libraries for given years from select tables with predefined columns
+# - used in the data tables pages
+
+## render_pct_change_table()
+# - renders a reactable to show the pct change between a given year and its previous year
+# - used in state_server.R and single_server.R
+
+## render_comparison_hc()
+# - renders an hc for a given library for a given value as compared to the mean and median of all libraries
+# - used in single_server.R
+
+## render_statewide_hc()
+# - renders an hc with total values, total per cap, library avg per cap, and library median per cap
+# - used in state_server.R
+
+## render_map()
+# - renders a leaflet map showing given libraries and given areas of service
+# - UPDATE DATA INPUT
+# - used in state_service_server.R
+
+#####
+
 get_valuebox <- function(df, year, col, pull) {
   # ensure numeric
   year <- as.numeric(year)
@@ -24,6 +76,7 @@ get_valuebox <- function(df, year, col, pull) {
   valueChange <- round(((valueCY - valuePY) / valuePY) * 100, 2)
 
   # Handle NAs, Infs, etc
+  # 2003 is earliest year, so handle 2003 - 1 here:
   if (year - 1 == 2002) {
     change <- ""
     PY <- ""
@@ -57,8 +110,6 @@ get_value_over_time_1lib <- function(
   )
 
   df %<>% filter(FISCAL_YEAR %in% year_range)
-
-  #df <- pls %>% filter(str_detect(CURRENT_LIBNAME, "Grand"))
 
   df %<>%
     select(CURRENT_LIBNAME, FISCAL_YEAR, values) %>%
@@ -179,7 +230,7 @@ render_table <- function(
   peer = FALSE, # is this a peer library table?
   target_lib = NULL, # for peer library table, which is the target lib (for bolding/styling)
   peer_col = NULL, # add peer group column to left sticky columns for peer tables
-  color_table = FALSE # remove later once we figure out how best to style
+  color_table = FALSE # remove later once we figure out how best to style?
 ) {
   # ensure logical
   per_cap <- as.logical(per_cap)
@@ -196,7 +247,7 @@ render_table <- function(
   # Apply per capita transformations
   if (per_cap) {
     all_cols <- c(cols, peer_col)
-    per_cap_cols <- setdiff(all_cols, "POPU_LSA")
+    per_cap_cols <- setdiff(all_cols, "POPU_LSA") # dont do per capita for the population
 
     data <- data %>%
       rowwise() %>%
@@ -340,7 +391,7 @@ render_table <- function(
     arrange(across(all_of(arrange_call), ~ desc(.))) %>%
     reactable(
       resizable = TRUE,
-      pagination = FALSE, #!peer, # base pagination on if it's a peer table or not (peer tables are not paginated)
+      pagination = FALSE,
       highlight = TRUE,
       defaultExpanded = FALSE,
       compact = TRUE,
@@ -353,7 +404,7 @@ render_table <- function(
       defaultColDef = colDef(
         align = "left",
         style = if (color_table) {
-          color_scales(data, colors = c("#002F6C", "#0086BF", "#4EC3E0"))
+          color_scales(data, colors = c("#4EC3E0", "#0086BF", "#002F6C"))
         } else {
           NULL
         }
@@ -416,7 +467,7 @@ render_pct_change_table <- function(
     mutate(
       CY_calc = case_when(CY %in% c(-1, -3, -9) ~ NA, .default = CY),
       PY_calc = case_when(PY %in% c(-1, -3, -9) ~ NA, .default = PY),
-      diff_pct = round(((CY_calc - PY_calc) / PY_calc), 4) # the reactable handles the *100, so keep this as is
+      diff_pct = round(((CY_calc - PY_calc) / PY_calc), 4) # the reactable handles the *100, so keep this calculation as is
     ) %>%
     select(SHORTNAME, INDICATOR, PY, CY, diff_pct)
 
@@ -504,8 +555,7 @@ render_pct_change_table <- function(
           }
         )
       )
-    ) #%>%
-  #add_source(if (percap) "* Per 1000 People" else "")
+    )
 }
 
 
@@ -575,10 +625,13 @@ render_comparison_hc <- function(
 
   # Create Utah average (including target)
   avg_df <- ut_df %>%
-    #filter(CURRENT_LIBNAME != target_lib) %>%
     group_by(FISCAL_YEAR) %>%
     reframe(
-      Library = if (under_50k) "Utah Average (< 50,000)" else "Utah Average",
+      Library = if (under_50k) {
+        "Average of Libraries (< 50,000)"
+      } else {
+        "Average of Libraries"
+      },
       population = sum(POPU_LSA, na.rm = T),
       plot_col = round(mean(value, na.rm = TRUE), 2),
       actual = round(sum(value_actual, na.rm = T), 2)
@@ -586,10 +639,13 @@ render_comparison_hc <- function(
 
   # Create Utah median (including target)
   median_df <- ut_df %>%
-    #filter(CURRENT_LIBNAME != target_lib) %>%
     group_by(FISCAL_YEAR) %>%
     reframe(
-      Library = if (under_50k) "Utah Median (< 50,000)" else "Utah Median",
+      Library = if (under_50k) {
+        "Median of Libraries (< 50,000)"
+      } else {
+        "Median of Libraries"
+      },
       population = sum(POPU_LSA, na.rm = T),
       plot_col = round(median(value, na.rm = TRUE), 2),
       actual = round(sum(value_actual, na.rm = T), 2)
@@ -663,6 +719,199 @@ render_comparison_hc <- function(
     hc_exporting(
       enabled = TRUE,
       filename = paste0(col_name_pretty, "_graph")
+    )
+}
+
+
+render_statewide_hc <- function(
+  df,
+  variable_key,
+  col,
+  per_cap = FALSE,
+  year = current_year, # temporary?
+  restrict_years = TRUE # temporary?
+) {
+  # Pre-define special handling columns - defined in /lists.R
+  currency_cols <- currency_cols
+  per1000_cols <- per1000_cols
+
+  # Temporary? This just sets restrict_years to only keep the past 5 years of data
+  year_range <- (as.numeric(year) - 4):as.numeric(year)
+
+  # Determine if per 1000 calculation is needed
+  per_1000 <- col %in% per1000_cols
+  per_cap_label <- if (per_1000) "Per 1000" else "Per Capita"
+
+  # Get pretty name for the column
+  col_name_pretty <- variable_key$INDICATOR[variable_key$SHORTNAME == col]
+
+  # Set tooltip formatting
+  if (col %in% currency_cols) {
+    ytt_format <- "${point.y}"
+    actual_tt_format <- "${point.actual:,.0f}"
+  } else {
+    ytt_format <- "{point.y}"
+    actual_tt_format <- "{point.actual:,.0f}"
+  }
+
+  # Restrict Years as default for now
+  if (restrict_years) {
+    df <- df %>% filter(FISCAL_YEAR %in% year_range)
+  }
+
+  ## Manipulate the data
+
+  # Clean and filter data
+  df <- df %>%
+    mutate(across(c(POPU_LSA, !!sym(col)), as.numeric)) %>%
+    mutate(across(everything(), ~ replace(., . %in% c(-1, -3, -9), NA)))
+
+  # Compute per capita or per 1000
+  df <- df %>%
+    mutate(
+      value = if (per_1000) {
+        !!sym(col) / (POPU_LSA / 1000)
+      } else {
+        !!sym(col) / POPU_LSA
+      },
+      value_actual = !!sym(col)
+    )
+
+  # Create Utah Total
+  utah_total_df <- df %>%
+    group_by(FISCAL_YEAR) %>%
+    reframe(
+      Library = "Statewide",
+      population = sum(POPU_LSA, na.rm = T),
+      actual = round(sum(value_actual, na.rm = T), 2)
+    ) %>%
+    mutate(
+      plot_col = if (per_1000) {
+        round(actual / (population / 1000), 2)
+      } else {
+        round(actual / population, 2)
+      }
+    )
+
+  # Create Library average
+  avg_df <- df %>%
+    group_by(FISCAL_YEAR) %>%
+    reframe(
+      Library = "Average of Libraries",
+      population = sum(POPU_LSA, na.rm = T),
+      plot_col = round(mean(value, na.rm = TRUE), 2),
+      actual = round(sum(value_actual, na.rm = T), 2)
+    )
+
+  # Create Library median
+  median_df <- df %>%
+    group_by(FISCAL_YEAR) %>%
+    reframe(
+      Library = "Median of Libraries",
+      population = sum(POPU_LSA, na.rm = T),
+      plot_col = round(median(value, na.rm = TRUE), 2),
+      actual = round(sum(value_actual, na.rm = T), 2)
+    )
+
+  # Create total library data
+  total_df <- df %>%
+    group_by(FISCAL_YEAR) %>%
+    reframe(
+      Library = "Utah Total",
+      population = sum(POPU_LSA, na.rm = T),
+      plot_col = round((value), 2),
+      actual = round(sum(value_actual, na.rm = T), 2)
+    )
+
+  # Create highchart
+  if (!per_cap) {
+    hc <- highchart() %>%
+      hc_add_series(
+        total_df,
+        type = "line",
+        color = "#4EC3E0",
+        hcaes(x = FISCAL_YEAR, y = actual, group = Library)
+      ) %>%
+      hc_tooltip(
+        pointFormat = paste0(
+          "<b>{series.name}</b><br>",
+          "<b>",
+          col_name_pretty,
+          ": ",
+          ytt_format,
+          "</b><br>",
+          "Population of Legal Service Area: {point.population:,.0f}<br>",
+          "{point.x}"
+        ),
+        headerFormat = ""
+      ) %>%
+      hc_xAxis(allowDecimals = FALSE) %>%
+      hc_yAxis(title = list(text = paste(col_name_pretty))) %>%
+      hc_title(text = paste(col_name_pretty)) %>%
+      hc_caption(
+        text = paste0(
+          "This graph shows the total value of all certified libraries in Utah."
+        )
+      )
+  } else if (per_cap) {
+    hc <- highchart() %>%
+      hc_add_series(
+        utah_total_df,
+        type = "line",
+        color = "#16b1feff",
+        hcaes(x = FISCAL_YEAR, y = plot_col, group = Library)
+      ) %>%
+      hc_add_series(
+        avg_df,
+        type = "line",
+        color = "#000000",
+        hcaes(x = FISCAL_YEAR, y = plot_col, group = Library)
+      ) %>%
+      hc_add_series(
+        median_df,
+        type = "line",
+        color = "#FC8B22",
+        hcaes(x = FISCAL_YEAR, y = plot_col, group = Library)
+      ) %>%
+      hc_tooltip(
+        pointFormat = paste0(
+          "<b>{series.name}</b><br>",
+          "<b>",
+          col_name_pretty,
+          " ",
+          per_cap_label,
+          ": ",
+          ytt_format,
+          "</b><br>",
+          col_name_pretty,
+          ": ",
+          actual_tt_format,
+          "<br>",
+          "Population of Legal Service Area: {point.population:,.0f}<br>",
+          "{point.x}"
+        ),
+        headerFormat = ""
+      ) %>%
+      hc_xAxis(allowDecimals = FALSE) %>%
+      hc_yAxis(title = list(text = paste(col_name_pretty, per_cap_label))) %>%
+      hc_title(text = paste(col_name_pretty, per_cap_label)) %>%
+      #hc_subtitle(text = subtitle) %>%
+      hc_caption(
+        text = paste0(
+          "The Statewide line shows overall per capita values for the entire state; e.g., total library visits / total population with library service. The Library average/median lines show the average/median values across all reporting libraries; i.e., the average/median of all libraries' per capita values."
+        )
+      )
+  }
+
+  hc %>%
+    hc_plotOptions(
+      series = list(marker = list(enabled = TRUE, radius = 7)),
+      line = list(animation = FALSE)
+    ) %>%
+    hc_legend(verticalAlign = "top") %>%
+    hc_exporting(
+      enabled = TRUE,
+      filename = paste0(col_name_pretty, "_statewide_graph")
     )
 }
 
@@ -761,6 +1010,8 @@ render_map <- function(
       addPolygons(
         data = county_libs_map,
         label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
         weight = 1,
         opacity = 1,
         color = "#4EC3E0",
@@ -780,6 +1031,8 @@ render_map <- function(
       addPolygons(
         data = city_libs_map,
         label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
         weight = 1,
         opacity = 1,
         color = "#002F6C",
@@ -803,6 +1056,8 @@ render_map <- function(
       addPolygons(
         data = agreed_service_city_map,
         label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
         weight = 1,
         opacity = 1,
         color = "#f632f3ff",
@@ -824,6 +1079,8 @@ render_map <- function(
       addPolygons(
         data = agreed_service_county_map,
         label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
         weight = 1,
         opacity = 1,
         color = "#f632f3ff",
@@ -847,6 +1104,8 @@ render_map <- function(
       addPolygons(
         data = bookmobile_service_map,
         label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
         weight = 1,
         opacity = 1,
         color = "#08f476ff",
@@ -870,6 +1129,8 @@ render_map <- function(
       addPolygons(
         data = no_county_service_map,
         label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
         weight = 1,
         opacity = 1,
         color = "#f17f33ff",
@@ -891,6 +1152,8 @@ render_map <- function(
       addPolygons(
         data = no_city_service_map,
         label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
         weight = 1,
         opacity = 1,
         color = "#f2322bff",

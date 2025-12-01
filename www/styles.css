@@ -104,3 +104,13 @@ html body .accordion .my-bg-secondary .accordion-body {
     z-index: 400 !important;
     /* set a lower z-index */
 }
+
+.card-95vh {
+    width: 100%;
+    height: 95vw;
+}
+
+hr {
+    padding: 0 !important;
+    margin: 0 !important;
+}
