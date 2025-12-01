@@ -87,36 +87,24 @@ county_map <- county_shp %>%
   mutate(across(
     c(county_service, bookmobile_service, agreed_service_county),
     ~ ifelse(is.na(.), "None", .)
-  )) %>%
-  mutate(
-    service_label = paste0(
-      "<table>
-                          <div style='font-size: 18px;'><b>",
-      NAME,
-      "</div>
-                          <div style='font-size: 12px;'>",
-      "Population: ",
-      POPULATION,
-      "</div>
-                          <div style='font-size: 12px;'>",
-      "County Library Service: ",
-      county_service,
-      "</div>
-          <div style='font-size: 12px;'>",
-      "Bookmobile Service: ",
-      bookmobile_service,
-      "</div>
-          <div style='font-size: 12px;'>",
-      "Agreed Service: ",
-      agreed_service_county,
-      "</div>
-          </table>"
-    )
-  )
+  ))
 
 ## Create the city map df
 municipalities_map <- municipalities %>%
   left_join(county_xwalk, by = "COUNTYNBR") %>%
+
+  # 4 cities dip into another county and have negligible pop differences; drop here
+  mutate(
+    drop = case_when(
+      NAME == "Bluffdale" & CNTY == "Utah" ~ 1,
+      NAME == "Draper" & CNTY == "Utah" ~ 1,
+      NAME == "Park City" & CNTY == "Wasatch" ~ 1,
+      NAME == "Santaquin" & CNTY == "Juab" ~ 1,
+      .default = 0
+    )
+  ) %>%
+  filter(drop == 0) %>%
+  select(-drop) %>%
   left_join(county_libs, by = "CNTY") %>%
   left_join(bookmobile_counties, by = "CNTY") %>%
   left_join(agreed_service_counties, by = "CNTY") %>%
@@ -133,33 +121,231 @@ municipalities_map <- municipalities %>%
     ~ ifelse(is.na(.), "None", .)
   )) %>%
   mutate(
-    service_label = paste0(
-      "<table>
-                        <div style='font-size: 18px;'><b>",
-      NAME,
-      "</div>
-                        <div style='font-size: 12px;'>",
-      "Population: ",
+    POPULATION = gsub(",", "", POPULATION),
+    POPULATION = as.numeric(POPULATION),
+
+    ## Population with access to..
+    pop_access_city = ifelse(city_service != "None", POPULATION, 0),
+    pop_access_county = ifelse(county_service != "None", POPULATION, 0),
+    pop_access_bookmobile = ifelse(bookmobile_service != "None", POPULATION, 0),
+    pop_access_agreed = ifelse(
+      agreed_service_city != "None" | agreed_service_county != "None",
       POPULATION,
-      "</div>
-                        <div style='font-size: 12px;'>",
-      "City Library Service: ",
+      0
+    ),
+
+    # ## unduplicated service populations
+    # # City as primary service provider
+    # pop_city_serv = ifelse(city_service != "None", POPULATION, 0),
+    # # Agreed city service as main service provider
+    # pop_agreed_serv_city = ifelse(agreed_service_city != "None", POPULATION, 0),
+    # # If not served by a city lib or agreed city lib, bookmobile as main service provider
+    # pop_bookmobile_serv = ifelse(
+    #   bookmobile_service != "None",
+    #   POPULATION - pop_city_serv - pop_agreed_serv_city,
+    #   0
+    # ),
+    # # If not served by a city lib or agreed city lib, county as main service provider
+    # # no counties have a county lib & bookmobile at the same time
+    # pop_county_serv = ifelse(
+    #   county_service != "None",
+    #   POPULATION - pop_city_serv - pop_agreed_serv_city,
+    #   0
+    # ),
+    city_pop_served = ifelse(
+      county_service != "None" |
+        bookmobile_service != "None" |
+        agreed_service_county != "None" |
+        agreed_service_city != "None" |
+        city_service != "None",
+      POPULATION,
+      0
+    ),
+    agreed_service_label = ifelse(
+      agreed_service_city == "None",
+      agreed_service_county,
+      agreed_service_city
+    ),
+    # Header Label
+    label_header = paste0(
+      "<div style='font-size:18px; font-weight:bold;'>",
+      NAME,
+      "</div>",
+      "<hr>",
+      "<div style='font-size:14px; font-weight:bold;'>",
+      current_year,
+      " Library Service Areas</div>",
+      "<table style='width:100%; font-size:13px;'>",
+      "<tr><td style='text-align:left;'>City Population:</td>",
+      "<td style='text-align:right;'>",
+      POPULATION,
+      "</td></tr>",
+      "</table>"
+    ),
+
+    # Population
+    label_pops = paste0(
+      "<hr>",
+      "<div style='font-size:14px; font-weight:bold;'>Population With Library Service Through...</div>",
+      "<table style='width:100%; font-size:13px;'>",
+      "<tr><td style='text-align:left;'>City Libraries:</td>",
+      "<td style='text-align:right;'>",
+      format(pop_access_city, big.mark = ","),
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>County Libraries:</td>",
+      "<td style='text-align:right;'>",
+      format(pop_access_county, big.mark = ","),
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>Bookmobiles:</td>",
+      "<td style='text-align:right;'>",
+      format(pop_access_bookmobile, big.mark = ","),
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>Service Agreements:</td>",
+      "<td style='text-align:right;'>",
+      format(pop_access_agreed, big.mark = ","),
+      "</td></tr>",
+      "</table>"
+    ),
+
+    # Providers
+    label_provider = paste0(
+      "<hr>",
+      "<div style='font-size:14px; font-weight:bold;'>Service Providers</div>",
+      "<table style='width:100%; font-size:13px;'>",
+      "<tr><td style='text-align:left;'>City Libraries:</td>",
+      "<td style='text-align:right;'>",
       city_service,
-      "</div>
-        <div style='font-size: 12px;'>",
-      "County Library Service: ",
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>County Libraries:</td>",
+      "<td style='text-align:right;'>",
       county_service,
-      "</div>
-        <div style='font-size: 12px;'>",
-      "Bookmobile Service: ",
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>Bookmobiles:</td>",
+      "<td style='text-align:right;'>",
       bookmobile_service,
-      "</div>
-        <div style='font-size: 12px;'>",
-      "Agreed Service: ",
-      agreed_service_city,
-      "</div>
-        </table>"
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>Service Agreements:</td>",
+      "<td style='text-align:right;'>",
+      agreed_service_label,
+      "</td></tr>",
+      "</table>"
+    ),
+
+    # Combined Label & Popup
+    service_label = paste0(label_header, "<hr><i>Click for more details</i>"),
+    service_popup = paste0(label_header, label_pops, label_provider)
+  )
+
+municipalities_county_pop <- municipalities_map %>%
+  st_drop_geometry() %>%
+  left_join(
+    county_map %>%
+      select(COUNTYNBR, COUNTY_POP = POPULATION, POPULATION_CNTY_BALANCE),
+    by = "COUNTYNBR"
+  ) %>%
+  ungroup() %>%
+  group_by(CNTY) %>%
+  reframe(
+    n_cities = n_distinct(NAME),
+    n_cities_w_city_service = n_distinct(NAME[city_service != "None"]),
+    n_cities_w_county_service_only = n_distinct(NAME[
+      city_service == "None" &
+        county_service != "None" &
+        bookmobile_service == "None" &
+        agreed_service_city == "None" &
+        agreed_service_county == "None"
+    ]),
+    county_population = COUNTY_POP,
+    county_balance_pop = POPULATION_CNTY_BALANCE,
+
+    ## Population with access to..
+    pop_access_city = sum(POPULATION[city_service != "None"], na.rm = T),
+    # Agreed service as main service provider
+    pop_access_agreed_city = sum(
+      POPULATION[agreed_service_city != "None"],
+      na.rm = T
+    ),
+    pop_access_county = sum(POPULATION[county_service != "None"], na.rm = T),
+    pop_access_bookmobile = sum(
+      POPULATION[bookmobile_service != "None"],
+      na.rm = T
+    ),
+
+    # prep for unduplicated rowwise calculations; -1's will be replaced with populations
+    pop_access_county_undup = ifelse(county_service != "None", -1, 0),
+    pop_access_bookmobile_undup = ifelse(bookmobile_service != "None", -1, 0),
+    pop_access_agreed_county_undup = ifelse(
+      agreed_service_county != "None",
+      -1,
+      0
     )
+  ) %>%
+  distinct() %>%
+  rowwise() %>%
+  mutate(
+    ## Add county balance to county-wide service areas
+    pop_access_county = ifelse(
+      pop_access_county > 0,
+      pop_access_county + county_balance_pop,
+      pop_access_county
+    ),
+    pop_access_bookmobile = ifelse(
+      pop_access_bookmobile > 0,
+      pop_access_bookmobile + county_balance_pop,
+      pop_access_bookmobile
+    ),
+
+    # City as main service provider; if service through county or bookmobile, 0
+    pop_access_city_undup = ifelse(
+      pop_access_county == 0 &
+        pop_access_bookmobile == 0,
+      pop_access_city, #if no county-wide, city service only
+      0
+    ),
+    pop_access_agreed_city_undup = ifelse(
+      pop_access_county == 0 &
+        pop_access_bookmobile == 0,
+      pop_access_agreed_city, #if no county-wide, agreed city service only
+      0
+    ),
+    # County as main service provider
+    pop_access_county_undup = ifelse(
+      pop_access_county_undup == -1,
+      county_population -
+        pop_access_city -
+        pop_access_bookmobile -
+        pop_access_agreed_county_undup -
+        pop_access_agreed_city,
+      pop_access_county_undup
+    ),
+    # Bookmobile as main service provider
+    pop_access_bookmobile_undup = ifelse(
+      pop_access_bookmobile_undup == -1,
+      county_population -
+        pop_access_city -
+        pop_access_county -
+        pop_access_agreed_county_undup -
+        pop_access_agreed_city,
+      pop_access_bookmobile_undup
+    ),
+    pop_access_agreed_county_undup = ifelse(
+      pop_access_agreed_county_undup == -1,
+      county_balance_pop,
+      pop_access_agreed_county_undup
+    ),
+
+    # Total People served in the county
+    county_pop_served = ifelse(
+      # if there is some kind of county wide service, serv pop is county pop
+      pop_access_county != 0 |
+        pop_access_bookmobile != 0 |
+        pop_access_agreed_county_undup != 0,
+      county_population,
+      # if not, city serv pop plus agreed city serv pop
+      pop_access_city + pop_access_agreed_city
+    ),
+    # population without service
+    pop_no_serv = county_population - county_pop_served
   )
 
 ## Create the library locations df
@@ -211,6 +397,146 @@ rm(
   county_libs,
   city_libs
 )
+
+county_map %<>%
+  left_join(municipalities_county_pop, by = c("NAME" = "CNTY")) %>%
+  mutate(
+    POPULATION = as.numeric(gsub(",", "", POPULATION)),
+
+    agreed_service_county_for_label = case_when(
+      pop_access_agreed_city != 0 ~ "Individual City Agreements",
+      .default = agreed_service_county
+    ),
+
+    city_service = case_when(
+      n_cities_w_city_service == 1 ~ paste0(
+        n_cities_w_city_service,
+        " City Library"
+      ),
+      n_cities_w_city_service > 1 ~ paste0(
+        n_cities_w_city_service,
+        " City Libraries"
+      ),
+      .default = "None"
+    ),
+
+    # Header Label
+    label_header = paste0(
+      "<div style='font-size:18px; font-weight:bold;'>",
+      NAME,
+      " County</div>",
+      "<hr>",
+      "<div style='font-size:14px; font-weight:bold;'>",
+      current_year,
+      " Library Service Areas</div>",
+      "<table style='width:100%; font-size:13px;'>",
+      "<tr><td style='text-align:left;'>County Population:</td>",
+      "<td style='text-align:right;'>",
+      format(POPULATION, big.mark = ","),
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>% of Population with Library Service:</td>",
+      "<td style='text-align:right;'>",
+      round((county_pop_served / POPULATION) * 100, 2),
+      "%</td></tr>",
+      "<tr><td style='text-align:left;'>Population With Library Service:</td>",
+      "<td style='text-align:right;'>",
+      format(county_pop_served, big.mark = ","),
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>Population Remainder:</td>",
+      "<td style='text-align:right;'>",
+      format(pop_no_serv, big.mark = ","),
+      "</td></tr>",
+      "</table>"
+    ),
+
+    # Population
+    label_pops = paste0(
+      "<hr>",
+      "<div style='font-size:14px; font-weight:bold;'>Population With Library Service Through...</div>",
+      "<table style='width:100%; font-size:13px;'>",
+      "<tr><td style='text-align:left;'>City Libraries:</td>",
+      "<td style='text-align:right;'>",
+      format(pop_access_city, big.mark = ","),
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>County Libraries:</td>",
+      "<td style='text-align:right;'>",
+      format(pop_access_county, big.mark = ","),
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>Bookmobiles:</td>",
+      "<td style='text-align:right;'>",
+      format(pop_access_bookmobile, big.mark = ","),
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>Service Agreements:</td>",
+      "<td style='text-align:right;'>",
+      format(
+        pop_access_agreed_city + pop_access_agreed_county_undup,
+        big.mark = ","
+      ),
+      "</td></tr>",
+      "</table>"
+    ),
+
+    label_undup_pops = paste0(
+      "<hr>",
+      "<div style='font-size:14px; font-weight:bold;'>Population With Library Service ONLY Through...</div>",
+      "<table style='width:100%; font-size:13px;'>",
+      "<tr><td style='text-align:left;'>City Libraries:</td>",
+      "<td style='text-align:right;'>",
+      format(pop_access_city_undup, big.mark = ","),
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>County Libraries:</td>",
+      "<td style='text-align:right;'>",
+      format(pop_access_county_undup, big.mark = ","),
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>Bookmobiles:</td>",
+      "<td style='text-align:right;'>",
+      format(pop_access_bookmobile_undup, big.mark = ","),
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>Service Agreements:</td>",
+      "<td style='text-align:right;'>",
+      format(
+        pop_access_agreed_city_undup + pop_access_agreed_county_undup,
+        big.mark = ","
+      ),
+      "</td></tr>",
+      "</table>"
+    ),
+
+    # Providers
+    label_provider = paste0(
+      "<hr>",
+      "<div style='font-size:14px; font-weight:bold;'>Service Providers</div>",
+      "<table style='width:100%; font-size:13px;'>",
+      "<tr><td style='text-align:left;'>City Libraries:</td>",
+      "<td style='text-align:right;'>",
+      city_service,
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>County Libraries:</td>",
+      "<td style='text-align:right;'>",
+      county_service,
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>Bookmobiles:</td>",
+      "<td style='text-align:right;'>",
+      bookmobile_service,
+      "</td></tr>",
+      "<tr><td style='text-align:left;'>Service Agreements:</td>",
+      "<td style='text-align:right;'>",
+      agreed_service_county_for_label,
+      "</td></tr>",
+      "</table>"
+    ),
+
+    # =======================
+    # Combined Label & Popup
+    # =======================
+    service_label = paste0(label_header, "<hr><i>Click for more details</i>"),
+    service_popup = paste0(
+      label_header,
+      label_pops,
+      label_undup_pops,
+      label_provider
+    )
+  )
 
 
 #### Statewide Per Cap Table ####

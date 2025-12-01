@@ -67,6 +67,20 @@ county_shp <- sf::st_read("data/counties/Counties.shp") %>%
       mutate(POPULATION = format(POPULATION, big.mark = ",")),
     by = c("COUNTY_FIPS" = "COUNTY")
   ) %>%
+  left_join(
+    census %>%
+      filter(PLACE == 99990) %>%
+      select(COUNTY, POPULATION_CNTY_BALANCE = POPULATION) %>%
+      mutate(
+        POPULATION_CNTY_BALANCE = format(
+          POPULATION_CNTY_BALANCE,
+          big.mark = ","
+        )
+      ),
+    by = c("COUNTY_FIPS" = "COUNTY")
+  ) %>%
+  mutate(across(c(POPULATION, POPULATION_CNTY_BALANCE), ~ gsub(",", "", .))) %>%
+  mutate(across(c(POPULATION, POPULATION_CNTY_BALANCE), ~ as.numeric(.))) %>%
   sf::st_transform('+proj=longlat +datum=WGS84')
 
 municipalities <- sf::st_read("data/municipalities/Municipalities.shp") %>%
@@ -87,6 +101,10 @@ municipalities <- sf::st_read("data/municipalities/Municipalities.shp") %>%
       mutate(POPULATION = format(POPULATION, big.mark = ",")),
     by = c("CITY_FIPS" = "PLACE")
   ) %>%
+  mutate(
+    POPULATION = gsub(",", "", POPULATION),
+    POPULATION = as.numeric(POPULATION)
+  ) %>%
   sf::st_transform('+proj=longlat +datum=WGS84')
 # Because some cities cross county lines, there may be 'duplicates', but it's okay practically because we don't care about the specific county-line city populations; we're keeping COUNTYNBR in for now because we will use it in some data prep for the map
 
@@ -106,20 +124,20 @@ ui <- fluidPage(
   style = "width: 95vw; height: 95vh; padding: 0; margin: 1;",
   theme = usl_theme,
 
-  div(
-    class = "container-fluid text-center mx-1 px-0",
-    div(
-      class = "row justify-content-center",
-      div(
-        class = "col-12 col-md-8 col-lg-8 align-self-center py-0 my-1 px-0 mx-1 bg-body-tertiary rounded-3",
-        tags$h1(class = "display-5 fw-bold", "Utah Libraries Data Dashboard"),
-        p(
-          class = "fs-5",
-          "Welcome to the Utah Libraries Data Dashboard! This tool helps library directors, city and county council members, and Utahns understand library service statewide."
-        )
-      )
-    )
-  ),
+  # div(
+  #   class = "container-fluid text-center mx-1 px-0",
+  #   div(
+  #     class = "row justify-content-center",
+  #     div(
+  #       class = "col-12 col-md-8 col-lg-8 align-self-center py-0 my-1 px-0 mx-1 bg-body-tertiary rounded-3",
+  #       tags$h1(class = "display-5 fw-bold", "Utah Libraries Data Dashboard"),
+  #       p(
+  #         class = "fs-5",
+  #         "Welcome to the Utah Libraries Data Dashboard! This tool helps library directors, city and county council members, and Utahns understand library service statewide."
+  #       )
+  #     )
+  #   )
+  # ),
   #end Container
 
   page_navbar(
@@ -152,18 +170,24 @@ ui <- fluidPage(
       )
     ),
 
+    #source("RScripts/state_service_ui.R", local = TRUE)$value,
     source("RScripts/state_ui.R", local = TRUE)$value,
     source("RScripts/single_ui.R", local = TRUE)$value,
-    source("RScripts/tables_menu_ui.R", local = TRUE)$value
+    source("RScripts/tables_menu_ui.R", local = TRUE)$value,
+    source("RScripts/state_service_ui.R", local = TRUE)$value,
+    nav_spacer(),
+    source("RScripts/about_ui.R", local = TRUE)$value
   )
 )
 
 
 #### Server ####
 server <- function(input, output, session) {
+  #source("RScripts/state_service_ui.R", local = TRUE)$value
   source("RScripts/state_server.R", local = TRUE)$value
   source("RScripts/single_server.R", local = TRUE)$value
   source("RScripts/tables_server.R", local = TRUE)$value
+  source("RScripts/state_service_server.R", local = TRUE)$value
 }
 
 
