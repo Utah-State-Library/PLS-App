@@ -467,9 +467,10 @@ render_pct_change_table <- function(
     mutate(
       CY_calc = case_when(CY %in% c(-1, -3, -9) ~ NA, .default = CY),
       PY_calc = case_when(PY %in% c(-1, -3, -9) ~ NA, .default = PY),
-      diff_pct = round(((CY_calc - PY_calc) / PY_calc), 4) # the reactable handles the *100, so keep this calculation as is
+      diff_pct = round(((CY_calc - PY_calc) / PY_calc), 4), # the reactable handles the *100, so keep this calculation as is
+      diff = round(CY_calc - PY_calc, 2)
     ) %>%
-    select(SHORTNAME, INDICATOR, PY, CY, diff_pct)
+    select(SHORTNAME, INDICATOR, PY, CY, diff_pct, diff)
 
   # Render reactable
   table_data %>%
@@ -552,6 +553,28 @@ render_pct_change_table <- function(
               'No Change'
             }
             htmltools::HTML(out)
+          }
+        ),
+        diff = colDef(
+          name = paste0("Difference", if (percap) " Per Capita"),
+          headerStyle = list(textAlign = "left"),
+          align = "right",
+          cell = function(value, index) {
+            if (is.na(value)) {
+              "No Data"
+            } else if (table_data$CY[index] %in% c(-1, -3, -9)) {
+              "Missing"
+            } else if (table_data$SHORTNAME[index] %in% currency_cols) {
+              # Format as US Dollars
+              paste0("$", format(value, big.mark = ",", decimal.mark = "."))
+            } else if (
+              table_data$SHORTNAME[index] %in% c(per1000_cols) && percap
+            ) {
+              paste0(value, " Per 1000")
+            } else {
+              # Keep the original value without currency formatting
+              format(value, big.mark = ",")
+            }
           }
         )
       )
@@ -777,11 +800,13 @@ render_statewide_hc <- function(
       value_actual = !!sym(col)
     )
 
-  # Create Utah Total
+  # Create Statewide Per Capita
   utah_total_df <- df %>%
     group_by(FISCAL_YEAR) %>%
     reframe(
-      Library = "Statewide",
+      Library = "Statewide Per Capita",
+      tt_exp = "Total value across all libraries divided by the total population served by libraries.",
+      tt_subexp = "Shows the overall per-resident level of resources statewide.",
       population = sum(POPU_LSA, na.rm = T),
       actual = round(sum(value_actual, na.rm = T), 2)
     ) %>%
@@ -793,31 +818,35 @@ render_statewide_hc <- function(
       }
     )
 
-  # Create Library average
+  # Create Library Per Capita Average
   avg_df <- df %>%
     group_by(FISCAL_YEAR) %>%
     reframe(
-      Library = "Average of Libraries",
+      Library = "Average Per Capita Across Libraries",
+      tt_exp = "The average of all libraries' individual per capita values.",
+      tt_subexp = "Treats each library equally and reflects the typical per capita level across libraries.",
       population = sum(POPU_LSA, na.rm = T),
       plot_col = round(mean(value, na.rm = TRUE), 2),
       actual = round(sum(value_actual, na.rm = T), 2)
     )
 
-  # Create Library median
+  # Create Library Per Capita Median
   median_df <- df %>%
     group_by(FISCAL_YEAR) %>%
     reframe(
-      Library = "Median of Libraries",
+      Library = "Median Per Capita Across Libraries",
+      tt_exp = "The middle per capita value among all libraries.",
+      tt_subexp = "Indicates what the 'middle' library looks like and reduces the impact of outliers.",
       population = sum(POPU_LSA, na.rm = T),
       plot_col = round(median(value, na.rm = TRUE), 2),
       actual = round(sum(value_actual, na.rm = T), 2)
     )
 
-  # Create total library data
+  # Create Statewide Total
   total_df <- df %>%
     group_by(FISCAL_YEAR) %>%
     reframe(
-      Library = "Utah Total",
+      Library = "Statewide Total",
       population = sum(POPU_LSA, na.rm = T),
       plot_col = round((value), 2),
       actual = round(sum(value_actual, na.rm = T), 2)
@@ -847,12 +876,7 @@ render_statewide_hc <- function(
       ) %>%
       hc_xAxis(allowDecimals = FALSE) %>%
       hc_yAxis(title = list(text = paste(col_name_pretty))) %>%
-      hc_title(text = paste(col_name_pretty)) %>%
-      hc_caption(
-        text = paste0(
-          "This graph shows the total value of all certified libraries in Utah."
-        )
-      )
+      hc_title(text = paste(col_name_pretty))
   } else if (per_cap) {
     hc <- highchart() %>%
       hc_add_series(
@@ -883,24 +907,21 @@ render_statewide_hc <- function(
           ": ",
           ytt_format,
           "</b><br>",
-          col_name_pretty,
-          ": ",
-          actual_tt_format,
+          "{point.tt_exp}",
           "<br>",
-          "Population of Legal Service Area: {point.population:,.0f}<br>",
-          "{point.x}"
+          "<em>{point.tt_subexp}</em>"
+          # col_name_pretty,
+          # ": ",
+          # actual_tt_format,
+          # "<br>",
+          # "Population of Legal Service Area: {point.population:,.0f}<br>",
+          # "{point.x}"
         ),
         headerFormat = ""
       ) %>%
       hc_xAxis(allowDecimals = FALSE) %>%
       hc_yAxis(title = list(text = paste(col_name_pretty, per_cap_label))) %>%
-      hc_title(text = paste(col_name_pretty, per_cap_label)) %>%
-      #hc_subtitle(text = subtitle) %>%
-      hc_caption(
-        text = paste0(
-          "The Statewide line shows overall per capita values for the entire state; e.g., total library visits / total population with library service. The Library average/median lines show the average/median values across all reporting libraries; i.e., the average/median of all libraries' per capita values."
-        )
-      )
+      hc_title(text = paste(col_name_pretty, per_cap_label))
   }
 
   hc %>%

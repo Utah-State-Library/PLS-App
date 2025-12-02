@@ -1,7 +1,7 @@
 nav_panel(
   title = tags$h5(class = "fw-bold", "Single Library"),
   class = " bg-body-secondary align-self-center m-1 p-0 border rounded-3",
-  style = "width: 95vw; height: 92vh; padding: 0; margin: 1;",
+  style = "width: 95vw; min-height: 92vh; padding: 0; margin: 1;",
 
   layout_sidebar(
     fill = TRUE,
@@ -134,19 +134,33 @@ nav_panel(
             ##### CSV Download Button #####
             #uiOutput("csv_button.single") #fix reactable output when downloading
           ),
-          reactableOutput("table_single")
+          reactableOutput("table_single"),
+          card(
+            p(
+              HTML(
+                paste0(
+                  "<b>This table shows how key library variables changed from the previous year.</b><br>",
+                  "A large percent change may reflect a meaningful shift, but may also be indicative of additional context (e.g., circulation may appear lower, but perhaps the library was closed for several weeks due to construction). Keep this in mind as you interpret this table.<br>",
+                  "Comparing across rows can show which parts of library service grew, which declined, and where the most notable changes occurred. Along with context, this table can support identifying trends and highlighting shifts in usage patterns, funding, or service."
+                )
+              )
+            )
+          )
         )
       ),
       nav_panel(
         "Staff Workload",
         layout_columns(
           col_widths = c(4, 8),
-          layout_columns(
-            col_widths = c(12, 12),
-            #row_heights = c(3, 1),
-            uiOutput("staffworkload_expl"),
-            reactableOutput("staffworkload_table")
+          #layout_columns(
+          #col_widths = c(12, 12),
+          card(
+            fill = FALSE,
+            card_header("Workload Per 1 FTE"),
+            reactableOutput("staffworkload_table"),
+            uiOutput("staffworkload_expl")
           ),
+          #),
           highchartOutput("hc_staff_single")
         )
       ),
@@ -177,6 +191,80 @@ nav_panel(
             )
           ),
           highchartOutput("hc_comparison_single")
+        )
+      ),
+      nav_panel(
+        title = "Peer Libraries",
+        #### Sidebar ####
+
+        layout_sidebar(
+          sidebar = sidebar(
+            width = "25%",
+            div(
+              class = "mb-2",
+              tags$h5(class = "mb-1 mt-0", "Select a Table"),
+              pickerInput(
+                "table_selection_peer",
+                label = NULL,
+                choices = list(
+                  "Overview",
+                  "Revenue and Expenditures" = c(
+                    "Revenue",
+                    "Total Expenditures",
+                    "Staff Expenditures",
+                    "Collection Expenditures"
+                  ),
+                  "Resources and Services" = c(
+                    "Circulation",
+                    "Collections",
+                    "Visits, Borrowers, Reference, and ILL",
+                    "Internet Access"
+                  ),
+                  "Programs" = c("Number of Programs", "Program Attendance")
+                ),
+                selected = "Overview",
+                multiple = FALSE
+              )
+            ),
+            div(
+              div(
+                class = "mb-2",
+                tags$h5(
+                  class = "mb-1 mt-0",
+                  "Choose Closest 10 Libraries Based On:"
+                ),
+                pickerInput(
+                  "peergroup",
+                  label = NULL,
+                  choices = c(
+                    "Population of Legal Service Area" = "POPU_LSA",
+                    "Total Operating Revenue" = "TOTINCM",
+                    "Total FTE of Paid Staff" = "TOTSTAFF"
+                  ),
+                  selected = "Population of Legal Service Area",
+                  multiple = FALSE
+                )
+              ),
+              checkboxInput(
+                "per_cap.table_peer",
+                "Show Values Per Capita?",
+                value = FALSE
+              ),
+              checkboxInput(
+                "color_table_peer",
+                "Color Table by High/Low Values?",
+                value = TRUE
+              )
+            ),
+            # ##### CSV Download Button #####
+
+            uiOutput("csv_button_peer")
+          ),
+          #### Main Body ####
+          card(
+            uiOutput("header_peer"),
+            reactableOutput("table_peer")
+          )
         )
       )
     )
