@@ -221,42 +221,53 @@ output$staffworkload_table <- renderReactable({
     pivot_longer(
       !TOTSTAFF,
       names_to = "Metric",
-      values_to = "Values"
+      values_to = "actual_value"
     ) %>%
     mutate(
       TOTSTAFF = as.numeric(TOTSTAFF),
-      Values = as.numeric(Values),
-      handle = round(Values / TOTSTAFF, 2),
+      actual_value = as.numeric(actual_value),
+      per1FTE = round(actual_value / TOTSTAFF, 2),
       Metric = case_when(
-        Metric == "POPU_LSA" ~ "Population per 1 FTE",
-        Metric == "VISITS" ~ "Visits per 1 FTE",
-        Metric == "TOTPRO" ~ "Programs per 1 FTE",
-        Metric == "TOTCIR" ~ "Circulation per 1 FTE",
-        Metric == "REFERENC" ~ "Reference Transactions per 1 FTE",
-        Metric == "REGBOR" ~ "Card Holders per 1 FTE",
-        Metric == "TOTATTEN" ~ "Program Attendance per 1 FTE"
+        Metric == "POPU_LSA" ~ "Population",
+        Metric == "VISITS" ~ "Visits",
+        Metric == "TOTPRO" ~ "Programs",
+        Metric == "TOTCIR" ~ "Circulation",
+        Metric == "REFERENC" ~ "Reference Transactions",
+        Metric == "REGBOR" ~ "Card Holders",
+        Metric == "TOTATTEN" ~ "Program Attendance"
       )
     )
 
   staff_handle %>%
-    select(Metric, handle) %>%
+    select(Metric, per1FTE, actual_value) %>%
     reactable(
       resizable = TRUE,
       defaultExpanded = FALSE,
       compact = TRUE,
       highlight = TRUE,
-      theme = reactableTheme(
-        #highlightColor = "#4EC3E0",
-        headerStyle = list(
-          background = "#ecf0f1",
-          borderColor = "#555"
-        )
-      ),
+      # theme = reactableTheme(
+      #   #highlightColor = "#4EC3E0",
+      #   headerStyle = list(
+      #     background = "#ecf0f1",
+      #     borderColor = "#555"
+      #   )
+      # ),
       columns = list(
         Metric = colDef(name = "", minWidth = 150),
-        handle = colDef(
-          name = "",
-          #format = colFormat(separators = TRUE, digits = 2),
+        per1FTE = colDef(
+          name = "Per 1 FTE",
+          cell = function(value, index) {
+            if (is.na(value)) {
+              "No Data"
+            } else if (is.infinite(value)) {
+              ""
+            } else {
+              format(value, big.mark = ",")
+            }
+          }
+        ),
+        actual_value = colDef(
+          name = "Library Total",
           cell = function(value, index) {
             if (is.na(value)) {
               "No Data"
@@ -446,4 +457,87 @@ output$popu_lsachange <- renderUI({
     filter(CURRENT_LIBNAME == input$library.single)
 
   get_valuebox(df, year = input$year.single, "POPU_LSA", pull = "change")
+})
+
+
+#### Reactive Peer Data ####
+
+target_lib <- reactive({
+  input$library.single
+})
+
+df_table_peer <- reactive({
+  df <- pls %>% filter(FISCAL_YEAR == input$year.single, hide_lib == 0)
+
+  libs <- get_nclosest(
+    df,
+    n = 10,
+    libname = input$library.single,
+    pg_col = input$peergroup,
+    percap = input$per_cap.table_peer
+  )
+
+  df %>%
+    filter(CURRENT_LIBNAME %in% libs)
+})
+
+## Render Library Summary
+output$header_peer <- renderUI({
+  req(input$library.single)
+  req(input$peergroup)
+
+  peer_pretty <- variable_key %>%
+    filter(SHORTNAME == input$peergroup) %>%
+    select(INDICATOR) %>%
+    pull()
+
+  HTML(paste0(
+    "<h4> Closest 10 libraries to ",
+    input$library.single,
+    " based on ",
+    peer_pretty,
+    "</h4>"
+  ))
+})
+
+
+#### Get Selected Table Columns ####
+peer_cols <- reactive({
+  table_columns[[input$table_selection_peer]]
+})
+
+#### Render Peer Table ####
+output$table_peer <- renderReactable({
+  req(peer_cols()) # make sure input is valid
+
+  render_table(
+    data = df_table_peer(),
+    cols = peer_cols(),
+    variable_key = variable_key,
+    order_col = input$peergroup,
+    per_cap = input$per_cap.table_peer,
+    peer = TRUE,
+    target_lib = target_lib(),
+    peer_col = input$peergroup,
+    color_table = input$color_table_peer
+  )
+})
+
+output$csv_button_peer <- renderUI({
+  req(input$table_selection_peer)
+
+  cleaned_name <- input$table_selection_peer %>%
+    tolower() %>%
+    gsub("[\\s]+", "_", .) %>%
+    gsub(",", "", .)
+
+  if (input$per_cap.table_peer) {
+    cleaned_name <- paste0(cleaned_name, "_per_capita")
+  }
+
+  prefix <- paste0(tolower(input$peergroup), "_peer_")
+
+  filename <- paste0(prefix, cleaned_name, "_table.csv")
+
+  csvDownloadButton("table_peer", filename = filename)
 })

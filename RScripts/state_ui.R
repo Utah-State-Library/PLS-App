@@ -72,14 +72,14 @@
 nav_panel(
   title = tags$h5(class = "fw-bold", "All Libraries"),
   class = " bg-body-secondary align-self-center m-1 p-0 border rounded-3",
-  style = "width: 95vw; height: 92vh; padding: 0; margin: 1;",
+  style = "width: 95vw; min-height: 92vh; padding: 0; margin: 1;",
 
-  layout_sidebar(
+  page_sidebar(
     fill = TRUE,
     sidebar = sidebar(
       title = "Filters",
       width = "25%",
-
+      open = FALSE,
       div(
         class = "mb-2",
         tags$h5(class = "mb-1 mt-0", "Select a Year"),
@@ -97,6 +97,20 @@ nav_panel(
 
     navset_card_tab(
       id = "active_tab_ut",
+      # title = popover(
+      #   span("Filters", bs_icon("gear")),
+      #   div(
+      #     class = "mb-2",
+      #     tags$h5(class = "mb-1 mt-0", "Select a Year"),
+      #     pickerInput(
+      #       "st_year",
+      #       label = NULL,
+      #       choices = years,
+      #       selected = max(years),
+      #       multiple = FALSE
+      #     )
+      #   )
+      # ),
       nav_panel(
         "Overview",
         uiOutput("library_header.state"),
@@ -194,13 +208,26 @@ nav_panel(
             ##### CSV Download Button #####
             #uiOutput("csv_button.single") #fix reactable output when downloading
           ),
-          reactableOutput("table_state")
+          reactableOutput("table_state"),
+          card(
+            fill = FALSE,
+            p(
+              HTML(
+                paste0(
+                  "<b>This table shows how key library variables changed from the previous year.</b><br>",
+                  "A large percent change may reflect a meaningful shift, but may also be indicative of additional context (e.g., physical circulation may appear lower, but perhaps patrons are checking out more e-books). Keep this in mind as you interpret this table.<br>",
+                  "Comparing across rows can show which parts of library service grew, which declined, and where the most notable changes occurred. Along with context, this table can support identifying trends and highlighting shifts in usage patterns, funding, or service."
+                )
+              )
+            )
+          )
         )
       ),
       nav_panel(
         "Comparison Chart",
 
         layout_sidebar(
+          width = c(12, 12),
           sidebar = sidebar(
             width = "25%",
             pickerInput(
@@ -220,10 +247,27 @@ nav_panel(
             checkboxInput(
               "st_hc_percap",
               "Show Values Per Capita?",
-              value = FALSE
+              value = TRUE
             )
           ),
-          highchartOutput("hc_comparison_state")
+          highchartOutput("hc_comparison_state"),
+          card(
+            p(
+              HTML(
+                paste0(
+                  "<b>This chart shows three different ways of understanding per capita values across libraries in the state.</b><br><br>",
+
+                  "<b>Statewide Per Capita</b> treats the entire state as a single system, dividing the total value for all libraries by the total state population. This measure reflects the overall resource level available per resident and is strongly influenced by large libraries. <br>",
+
+                  "<b>Average Per Capita Across Libraries</b> calculates each library’s per capita value and then averages those figures, giving equal weight to every library regardless of size. This reflects the typical per capita value if all libraries were considered equally.<br>",
+
+                  "<b>Median Per Capita Across Libraries</b> identifies the middle per capita value, offering a picture of what the “typical” library looks like while reducing the influence of outliers.<br><br>",
+
+                  "Comparing these lines can reveal important patterns, such as whether large or small libraries tend to have higher per capita values, and whether the distribution of resources is skewed by a handful of high- or low-performing libraries."
+                )
+              )
+            )
+          )
         )
       )
     )

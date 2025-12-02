@@ -114,3 +114,13 @@ hr {
     padding: 0 !important;
     margin: 0 !important;
 }
+
+.bslib-sidebar-layout>.collapse-toggle {
+    padding: 20px 0;
+    margin-bottom: 20px;
+    background-color: #002F6C;
+}
+
+.bslib-sidebar-layout>.collapse-toggle>.collapse-icon {
+    fill: #ffffff !important;
+}

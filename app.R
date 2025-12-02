@@ -119,70 +119,80 @@ source("RScripts/functions.R", local = TRUE)
 
 #### UI ####
 
-ui <- fluidPage(
-  class = "container-fluid align-self-center mx-1 px-0",
-  style = "width: 95vw; height: 95vh; padding: 0; margin: 1;",
-  theme = usl_theme,
+ui <- #function(req) {
+  fluidPage(
+    class = "container-fluid align-self-center mx-1 px-0",
+    style = "width: 95vw; height: 95vh; padding: 0; margin: 1;",
+    theme = usl_theme,
 
-  # div(
-  #   class = "container-fluid text-center mx-1 px-0",
-  #   div(
-  #     class = "row justify-content-center",
-  #     div(
-  #       class = "col-12 col-md-8 col-lg-8 align-self-center py-0 my-1 px-0 mx-1 bg-body-tertiary rounded-3",
-  #       tags$h1(class = "display-5 fw-bold", "Utah Libraries Data Dashboard"),
-  #       p(
-  #         class = "fs-5",
-  #         "Welcome to the Utah Libraries Data Dashboard! This tool helps library directors, city and county council members, and Utahns understand library service statewide."
-  #       )
-  #     )
-  #   )
-  # ),
-  #end Container
+    # div(
+    #   class = "container-fluid text-center mx-1 px-0",
+    #   div(
+    #     class = "row justify-content-center",
+    #     div(
+    #       class = "col-12 col-md-8 col-lg-8 align-self-center py-0 my-1 px-0 mx-1 bg-body-tertiary rounded-3",
+    #       tags$h1(class = "display-5 fw-bold", "Utah Libraries Data Dashboard"),
+    #       p(
+    #         class = "fs-5",
+    #         "Welcome to the Utah Libraries Data Dashboard! This tool helps library directors, city and county council members, and Utahns understand library service statewide."
+    #       )
+    #     )
+    #   )
+    # ),
+    #end Container
 
-  page_navbar(
-    title = "",
-    navbar_options = navbar_options(
-      bg = NULL,
-      underline = TRUE
-    ),
+    page_navbar(
+      title = "",
+      navbar_options = navbar_options(
+        bg = NULL,
+        underline = TRUE
+      ),
 
-    #### USL Logo in Header ####
-    shiny::includeCSS("www/styles.css"),
-    use_tota11y(), # for accessibility checking - remove/comment out in final product
+      #### USL Logo in Header ####
+      shiny::includeCSS("www/styles.css"),
+      use_tota11y(), # for accessibility checking - remove/comment out in final product
 
-    tags$head(
-      tags$script(
-        HTML(
-          '
-          $(document).ready(function() {
-            $(".navbar-brand").replaceWith(
-              $("<a target=\'_blank\' rel=\'noopener noreferrer\' class = \'navbar-brand\' href = \'https://library.utah.gov/\'></a>")
-            );
-            var containerHeight = $(".navbar .container-fluid").height() + "px";
-            $(".navbar-brand")
-              .append(
-                "<img id = \'www\' src=\'usllogo.jpeg\' role=\'presentation\'" +
-                " height = " + containerHeight + ">"  
-              );
-            });'
-        )
-      )
-    ),
+      # tags$head(
+      #   tags$script(
+      #     HTML(
+      #       '
+      #       $(document).ready(function() {
+      #         $(".navbar-brand").replaceWith(
+      #           $("<a target=\'_blank\' rel=\'noopener noreferrer\' class = \'navbar-brand\' href = \'https://library.utah.gov/\'></a>")
+      #         );
+      #         var containerHeight = $(".navbar .container-fluid").height() + "px";
+      #         $(".navbar-brand")
+      #           .append(
+      #             "<img id = \'www\' src=\'usllogo.jpeg\' role=\'presentation\'" +
+      #             " height = " + containerHeight + ">"
+      #           );
+      #         });'
+      #     )
+      #   )
+      # ),
 
-    #source("RScripts/state_service_ui.R", local = TRUE)$value,
-    source("RScripts/state_ui.R", local = TRUE)$value,
-    source("RScripts/single_ui.R", local = TRUE)$value,
-    source("RScripts/tables_menu_ui.R", local = TRUE)$value,
-    source("RScripts/state_service_ui.R", local = TRUE)$value,
-    nav_spacer(),
-    source("RScripts/about_ui.R", local = TRUE)$value
+      #source("RScripts/state_service_ui.R", local = TRUE)$value,
+      source("RScripts/state_ui.R", local = TRUE)$value,
+      source("RScripts/single_ui.R", local = TRUE)$value,
+      source("RScripts/tables_menu_ui.R", local = TRUE)$value,
+      source("RScripts/state_service_ui.R", local = TRUE)$value,
+      nav_spacer(),
+      source("RScripts/about_ui.R", local = TRUE)$value
+    )
   )
-)
-
+#}
 
 #### Server ####
 server <- function(input, output, session) {
+  # observe({
+  #   # Trigger this observer every time an input changes
+  #   reactiveValuesToList(input)
+  #   session$doBookmark()
+  # })
+  # onBookmarked(function(url) {
+  #   updateQueryString(url)
+  # })
+
   #source("RScripts/state_service_ui.R", local = TRUE)$value
   source("RScripts/state_server.R", local = TRUE)$value
   source("RScripts/single_server.R", local = TRUE)$value
@@ -192,7 +202,10 @@ server <- function(input, output, session) {
 
 
 #### Run App ####
-shinyApp(ui = ui, server = server)
+shinyApp(
+  ui = ui,
+  server = server #, enableBookmarking = "url"
+)
 
 ## notes for tomorrow - check outlet file against pls file
 ## add logic for system dropdown if show libs not selected, etc.

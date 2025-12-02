@@ -39,6 +39,8 @@ ae_name <- outlets %>%
 ## Per Capita cases where the column needs to be calculated per 1000 people
 per1000_cols <- c(
   "TOTSTAFF",
+  "VLNT",
+  "VLNT_HRS",
   "GPTERMS",
   "HOTSPOT",
   "K0_5PRO",
