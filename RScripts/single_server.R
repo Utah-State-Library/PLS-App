@@ -187,6 +187,7 @@ output$staffworkload_expl <- renderUI({
     pull()
 
   HTML(paste0(
+    "<b>About FTE</b><br>",
     "FTE represents a 40 hour work week and does not necessarily align with the number of employees at the library. Some staff may be full time or part time. In ",
     input$year.single,
     ", ",
@@ -196,8 +197,7 @@ output$staffworkload_expl <- renderUI({
     n_staff,
     " employees who split ",
     n_FTE,
-    " FTE. <br>
-NOTE: This table is a workload proxy - it does not show actual numbers for staff work.<br>"
+    " FTE."
   ))
 })
 

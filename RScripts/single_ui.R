@@ -136,6 +136,7 @@ nav_panel(
           ),
           reactableOutput("table_single"),
           card(
+            class = "my-bg-white",
             p(
               HTML(
                 paste0(
@@ -151,17 +152,25 @@ nav_panel(
       nav_panel(
         "Staff Workload",
         layout_columns(
-          col_widths = c(4, 8),
-          #layout_columns(
-          #col_widths = c(12, 12),
+          col_widths = c(12, 12),
           card(
+            class = "my-bg-white",
             fill = FALSE,
-            card_header("Workload Per 1 FTE"),
-            reactableOutput("staffworkload_table"),
             uiOutput("staffworkload_expl")
           ),
-          #),
-          highchartOutput("hc_staff_single")
+          layout_columns(
+            col_widths = c(5, 7),
+            card(
+              class = "my-bg-white",
+              fill = FALSE,
+              card_header("Workload Per 1 FTE"),
+              reactableOutput("staffworkload_table"),
+              p(
+                "NOTE: This table is a workload proxy - it does not show actual numbers for staff work"
+              )
+            ),
+            card(class = "my-bg-white", highchartOutput("hc_staff_single"))
+          )
         )
       ),
       nav_panel(
@@ -190,7 +199,7 @@ nav_panel(
               value = FALSE
             )
           ),
-          highchartOutput("hc_comparison_single")
+          card(class = "my-bg-white", highchartOutput("hc_comparison_single"))
         )
       ),
       nav_panel(
@@ -261,10 +270,8 @@ nav_panel(
             uiOutput("csv_button_peer")
           ),
           #### Main Body ####
-          card(
-            uiOutput("header_peer"),
-            reactableOutput("table_peer")
-          )
+          uiOutput("header_peer"),
+          reactableOutput("table_peer")
         )
       )
     )

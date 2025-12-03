@@ -106,8 +106,6 @@ nav_panel(
       uiOutput("csv_button")
     ),
     #### Main Body ####
-    card(
-      reactableOutput("table_all")
-    )
+    reactableOutput("table_all")
   )
 )

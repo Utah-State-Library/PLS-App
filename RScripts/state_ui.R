@@ -1,74 +1,3 @@
-# nav_panel(
-#   title = tags$h5(class = "fw-bold", "All Utah Libraries"),
-#   class = " bg-body-secondary align-self-center m-1 p-0 border rounded-3",
-#   #style = "width: 95vw; height: 92vh; padding: 0; margin: 1;",
-#   style = "width: 95vw; padding: 0; margin: 1;",
-
-#   layout_sidebar(
-#     fill = TRUE,
-#     sidebar = sidebar(
-#       title = "Filters",
-#       width = "25%",
-
-#       div(
-#         class = "mb-2",
-#         tags$h5(class = "mb-1 mt-0", "Select Year"),
-#         pickerInput(
-#           "st_year",
-#           label = NULL,
-#           choices = years,
-#           selected = max(years),
-#           multiple = FALSE
-#         )
-#       )
-#     ),
-#     layout_columns(
-#       fill = TRUE,
-#       col_widths = c(12, 12),
-#       class = "p-0 m-0",
-
-#       nav_panel(
-#         "Overview",
-#         layout_sidebar(
-#           sidebar = sidebar(
-#             width = "25%",
-#             pickerInput(
-#               "table_selection_state",
-#               "Select a Table",
-#               choices = list(
-#                 "Overview",
-#                 "Revenue and Expenditures" = c(
-#                   "Revenue",
-#                   "Total Expenditures",
-#                   "Staff Expenditures",
-#                   "Collection Expenditures"
-#                 ),
-#                 "Resources and Services" = c(
-#                   "Circulation",
-#                   "Collections",
-#                   "Visits, Borrowers, Reference, and ILL",
-#                   "Internet Access"
-#                 ),
-#                 "Programs" = c("Number of Programs", "Program Attendance")
-#               ),
-#               selected = "Overview",
-#               multiple = FALSE
-#             ),
-#             checkboxInput(
-#               "percap.state",
-#               "Show Values Per Capita?",
-#               value = FALSE
-#             ) #,
-#             ##### CSV Download Button #####
-#             #uiOutput("csv_button.single") #fix reactable output when downloading
-#           ),
-#           reactableOutput("table_state")
-#         )
-#       )
-#     )
-#   )
-# )
-
 nav_panel(
   title = tags$h5(class = "fw-bold", "All Libraries"),
   class = " bg-body-secondary align-self-center m-1 p-0 border rounded-3",
@@ -210,6 +139,7 @@ nav_panel(
           ),
           reactableOutput("table_state"),
           card(
+            class = "my-bg-white",
             fill = FALSE,
             p(
               HTML(
@@ -250,8 +180,9 @@ nav_panel(
               value = TRUE
             )
           ),
-          highchartOutput("hc_comparison_state"),
+          card(class = "my-bg-white", highchartOutput("hc_comparison_state")),
           card(
+            class = "my-bg-white",
             p(
               HTML(
                 paste0(
