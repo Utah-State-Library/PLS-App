@@ -1,19 +1,22 @@
+/* Set Icon Color */
 .icon-color {
     color: #002f6C !important;
 }
 
+/* Set Reactable Hover Color */
 .ReactTable .rt-tr:hover {
     background-color: #4EC3E0 !important;
     /* color: #ffffff; */
 }
 
-/* Dropdown Styling */
+/* Set Dropdown Background Color */
 .bootstrap-select .dropdown-toggle {
     /* Default styles for the pickerInput */
     background-color: #002F6C !important;
     color: #ffffff;
 }
 
+/* Set Dropdown Hover Color */
 .bootstrap-select .dropdown-toggle:hover {
     /* Styles to apply when hovering over the pickerInput */
     background-color: #0086BF !important;
@@ -21,30 +24,47 @@
     cursor: pointer;
 }
 
-/* To style specific elements within the pickerInput, like dropdown items */
+/* Set Hover Color of Dropdown Items */
 .dropdown-item:hover {
     background-color: #4EC3E0 !important;
     /* color: #ffffff; */
 }
 
-
-/* Button Styling */
+/* Set Button Color */
 .btn-default {
     background-color: #002F6C !important;
     color: #ffffff;
 }
 
+/* Set Hover Color for Button */
 .btn-default:hover {
     background-color: #0086BF !important;
     color: #ffffff;
     cursor: pointer;
 }
 
+/* Make sidebar toggle more visible */
+.bslib-sidebar-layout>.collapse-toggle {
+    padding: 20px 0;
+    margin-bottom: 20px;
+    background-color: #002F6C;
+}
+
+/* Change color of sidebar toggle caret to white for visibility */
+.bslib-sidebar-layout>.collapse-toggle>.collapse-icon {
+    fill: #ffffff !important;
+}
+
+.my-bg-white {
+    background-color: #ffffff;
+}
+
+/* Set Font */
 body {
     font-family: "Raleway", sans-serif;
 }
 
-
+/* Set Margins and Padding for Heading Calls */
 h1,
 .h1,
 h2,
@@ -61,66 +81,26 @@ h6,
     margin-bottom: 0rem;
 }
 
-/* Target dropdown nav links */
-.nav-item.dropdown>.nav-link {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between;
-    /* keeps caret on right */
-    gap: 0.5rem;
-}
-
-/* Adjust caret alignment */
-.nav-item.dropdown>.nav-link::after {
-    position: relative;
-    top: 0;
-    /* center it vertically */
-    margin-left: 0.25rem;
-}
-
+/* Set Padding for ValueBoxes - don't remove */
 div.nopad .value-box-area {
     padding-top: .75rem;
     padding-bottom: .25rem;
     margin-bottom: 0.75rem;
 }
 
-div.nopadnomarg .value-box-area {
-    padding-top: .75rem;
-    padding-bottom: .25rem;
-    margin-bottom: 0;
-}
-
-/* www/styles.css */
+/* REMOVE? Trying to set accordion bg, but didn't work? */
 html body .accordion .my-bg-secondary .accordion-button {
     background-color: var(--bs-body-secondary) !important;
     color: var(--bs-body-color) !important;
 }
 
+/* REMOVE? Trying to set accordion bg, but didn't work? */
 html body .accordion .my-bg-secondary .accordion-body {
     background-color: var(--bs-body-secondary) !important;
 }
 
-.legend {
-    z-index: 400 !important;
-    /* set a lower z-index */
-}
-
-.card-95vh {
-    width: 100%;
-    height: 95vw;
-}
-
+/* Set margin and padding for horizontal rule */
 hr {
     padding: 0 !important;
     margin: 0 !important;
-}
-
-.bslib-sidebar-layout>.collapse-toggle {
-    padding: 20px 0;
-    margin-bottom: 20px;
-    background-color: #002F6C;
-}
-
-.bslib-sidebar-layout>.collapse-toggle>.collapse-icon {
-    fill: #ffffff !important;
 }
