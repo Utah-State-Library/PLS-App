@@ -12,8 +12,8 @@
 /* Set Dropdown Background Color */
 .bootstrap-select .dropdown-toggle {
     /* Default styles for the pickerInput */
-    background-color: #002F6C !important;
-    color: #ffffff;
+    background-color: #e9ecef !important;
+    color: #000000;
 }
 
 /* Set Dropdown Hover Color */
@@ -53,6 +53,18 @@
 /* Change color of sidebar toggle caret to white for visibility */
 .bslib-sidebar-layout>.collapse-toggle>.collapse-icon {
     fill: #ffffff !important;
+}
+
+.accordion {
+    --bs-accordion-btn-color: #002F6C;
+    --bs-accordion-btn-bg: #d0d1d2;
+    --bs-accordion-active-color: #002F6C;
+    --bs-accordion-active-bg: #d0d1d2;
+
+}
+
+.accordion-body {
+    background-color: #d0d1d2;
 }
 
 .my-bg-white {

@@ -18,7 +18,6 @@ nav_panel(
         accordion_panel(
           title = "Data Selection",
           icon = bsicons::bs_icon("filter-square-fill", class = "icon-color"),
-          #class = "my-bg-secondary",
           div(
             class = "mb-2",
             tags$h5(class = "mb-1 mt-0", "Select a Table"),

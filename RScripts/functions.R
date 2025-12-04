@@ -546,9 +546,9 @@ render_pct_change_table <- function(
               return()
             }
             out <- if (value > 0) {
-              paste(scales::percent(value, accuracy = 0.1), '▲')
+              paste(scales::percent(value, accuracy = 0.01), '▲')
             } else if (value < 0) {
-              paste(scales::percent(value, accuracy = 0.1), '▼')
+              paste(scales::percent(value, accuracy = 0.01), '▼')
             } else {
               'No Change'
             }
@@ -556,8 +556,8 @@ render_pct_change_table <- function(
           }
         ),
         diff = colDef(
-          name = paste0("Difference", if (percap) " Per Capita"),
-          headerStyle = list(textAlign = "left"),
+          name = paste0(if (percap) "Per Capita Difference" else "Difference"),
+          headerStyle = list(textAlign = "right"),
           align = "right",
           cell = function(value, index) {
             if (is.na(value)) {
