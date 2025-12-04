@@ -187,8 +187,7 @@ output$staffworkload_expl <- renderUI({
     pull()
 
   HTML(paste0(
-    "<b>About FTE</b><br>",
-    "FTE represents a 40 hour work week and does not necessarily align with the number of employees at the library. Some staff may be full time or part time. In ",
+    "In ",
     input$year.single,
     ", ",
     input$library.single,

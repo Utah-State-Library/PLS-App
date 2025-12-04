@@ -140,8 +140,8 @@ nav_panel(
             p(
               HTML(
                 paste0(
-                  "<b>This table shows how key library variables changed from the previous year.</b><br>",
-                  "A large percent change may reflect a meaningful shift, but may also be indicative of additional context (e.g., circulation may appear lower, but perhaps the library was closed for several weeks due to construction). Keep this in mind as you interpret this table.<br>",
+                  "<b>This table shows how key library variables changed from the previous year.</b><br><br>",
+                  "A large percent change may reflect a meaningful shift, but may also be indicative of additional context (e.g., construction disrupting service, removal of expired accounts, or the loss of a storytime employee). Keep this in mind as you interpret this table.<br><br>",
                   "Comparing across rows can show which parts of library service grew, which declined, and where the most notable changes occurred. Along with context, this table can support identifying trends and highlighting shifts in usage patterns, funding, or service."
                 )
               )
@@ -152,14 +152,10 @@ nav_panel(
       nav_panel(
         "Staff Workload",
         layout_columns(
-          col_widths = c(12, 12),
-          card(
-            class = "my-bg-white",
-            fill = FALSE,
-            uiOutput("staffworkload_expl")
-          ),
+          col_widths = c(5, 7),
+
           layout_columns(
-            col_widths = c(5, 7),
+            col_widths = c(12, 12),
             card(
               class = "my-bg-white",
               fill = FALSE,
@@ -169,8 +165,21 @@ nav_panel(
                 "NOTE: This table is a workload proxy - it does not show actual numbers for staff work"
               )
             ),
-            card(class = "my-bg-white", highchartOutput("hc_staff_single"))
-          )
+            card(
+              class = "my-bg-white",
+              fill = FALSE,
+              p(
+                HTML(
+                  paste0(
+                    "<b>About FTE</b><br><br>",
+                    "FTE represents a 40 hour work week and does not necessarily align with the number of employees at the library. Some staff may be full time or part time.<br>"
+                  )
+                )
+              ),
+              uiOutput("staffworkload_expl")
+            )
+          ),
+          card(class = "my-bg-white", highchartOutput("hc_staff_single"))
         )
       ),
       nav_panel(

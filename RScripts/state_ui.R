@@ -144,8 +144,8 @@ nav_panel(
             p(
               HTML(
                 paste0(
-                  "<b>This table shows how key library variables changed from the previous year.</b><br>",
-                  "A large percent change may reflect a meaningful shift, but may also be indicative of additional context (e.g., physical circulation may appear lower, but perhaps patrons are checking out more e-books). Keep this in mind as you interpret this table.<br>",
+                  "<b>This table shows how key library variables changed from the previous year.</b><br><br>",
+                  "A large percent change may reflect a meaningful shift, but may also be indicative of additional context (e.g., physical circulation may appear lower, but perhaps patrons are checking out more e-books). Keep this in mind as you interpret this table.<br><br>",
                   "Comparing across rows can show which parts of library service grew, which declined, and where the most notable changes occurred. Along with context, this table can support identifying trends and highlighting shifts in usage patterns, funding, or service."
                 )
               )
