@@ -1,7 +1,6 @@
 nav_panel(
   title = tags$h5(class = "fw-bold", "About"),
   class = " bg-body-secondary align-self-center m-1 p-0 border rounded-3",
-  #style = "width: 95vw; height: 92vh; padding: 0; margin: 1;",
   style = "width: 95vw; padding: 0; margin: 1;",
 
   layout_columns(

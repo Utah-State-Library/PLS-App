@@ -19,6 +19,7 @@ library(htmlwidgets)
 library(shinya11y)
 library(sf)
 library(thematic)
+#library(googlesheets4)
 
 #### Color Palette ####
 head_color <- "#002F6C"
@@ -59,29 +60,30 @@ outlets <- readRDS("data/pls_outlet_national.rds") %>%
 
 county_shp <- sf::st_read("data/counties/Counties.shp") %>%
   select(NAME, COUNTYNBR, COUNTY_FIPS = FIPS, geometry) %>%
+  mutate(COUNTYNBR = as.numeric(COUNTYNBR)) %>%
   mutate(NAME = str_to_title(NAME)) %>%
-  left_join(
-    census %>%
-      filter(PLACE == 0) %>%
-      select(COUNTY, POPULATION) %>%
-      mutate(POPULATION = format(POPULATION, big.mark = ",")),
-    by = c("COUNTY_FIPS" = "COUNTY")
-  ) %>%
-  left_join(
-    census %>%
-      filter(PLACE == 99990) %>%
-      select(COUNTY, POPULATION_CNTY_BALANCE = POPULATION) %>%
-      mutate(
-        POPULATION_CNTY_BALANCE = format(
-          POPULATION_CNTY_BALANCE,
-          big.mark = ","
-        )
-      ),
-    by = c("COUNTY_FIPS" = "COUNTY")
-  ) %>%
-  mutate(across(c(POPULATION, POPULATION_CNTY_BALANCE), ~ gsub(",", "", .))) %>%
-  mutate(across(c(POPULATION, POPULATION_CNTY_BALANCE), ~ as.numeric(.))) %>%
   sf::st_transform('+proj=longlat +datum=WGS84')
+# left_join(
+#   census %>%
+#     filter(PLACE == 0) %>%
+#     select(COUNTY, POPULATION) %>%
+#     mutate(POPULATION = format(POPULATION, big.mark = ",")),
+#   by = c("COUNTY_FIPS" = "COUNTY")
+# ) %>%
+# left_join(
+#   census %>%
+#     filter(PLACE == 99990) %>%
+#     select(COUNTY, POPULATION_CNTY_BALANCE = POPULATION) %>%
+#     mutate(
+#       POPULATION_CNTY_BALANCE = format(
+#         POPULATION_CNTY_BALANCE,
+#         big.mark = ","
+#       )
+#     ),
+#   by = c("COUNTY_FIPS" = "COUNTY")
+# ) %>%
+# mutate(across(c(POPULATION, POPULATION_CNTY_BALANCE), ~ gsub(",", "", .))) %>%
+# mutate(across(c(POPULATION, POPULATION_CNTY_BALANCE), ~ as.numeric(.))) %>%
 
 municipalities <- sf::st_read("data/municipalities/Municipalities.shp") %>%
   select(NAME, COUNTYNBR, CITY_FIPS = FIPS, geometry) %>%
@@ -91,19 +93,8 @@ municipalities <- sf::st_read("data/municipalities/Municipalities.shp") %>%
       NAME == "South Salt Lake City" ~ "South Salt Lake",
       .default = NAME
     ),
-    CITY_FIPS = as.numeric(CITY_FIPS)
-  ) %>%
-  left_join(
-    census %>%
-      filter(COUNTY == 0) %>%
-      distinct() %>%
-      select(PLACE, POPULATION) %>%
-      mutate(POPULATION = format(POPULATION, big.mark = ",")),
-    by = c("CITY_FIPS" = "PLACE")
-  ) %>%
-  mutate(
-    POPULATION = gsub(",", "", POPULATION),
-    POPULATION = as.numeric(POPULATION)
+    CITY_FIPS = as.numeric(CITY_FIPS),
+    CITY_FIPS = case_when(NAME == "Lake Point" ~ 42010, .default = CITY_FIPS)
   ) %>%
   sf::st_transform('+proj=longlat +datum=WGS84')
 # Because some cities cross county lines, there may be 'duplicates', but it's okay practically because we don't care about the specific county-line city populations; we're keeping COUNTYNBR in for now because we will use it in some data prep for the map
