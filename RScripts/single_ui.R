@@ -100,7 +100,7 @@ nav_panel(
         )
       ),
       nav_panel(
-        "Percent Change Tables",
+        "Change from Last Year",
         layout_sidebar(
           sidebar = sidebar(
             width = "25%",

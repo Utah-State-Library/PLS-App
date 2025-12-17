@@ -955,19 +955,21 @@ render_map <- function(
   service_areas_legend <- data.frame(
     colors = c(
       "#4EC3E0",
-      "#002F6C",
-      "#f632f3ff",
+      "#d3d3d3",
       "#08f476ff",
-      "#f17f33ff",
-      "#f2322bff"
+      "#002F60",
+      "#f632f3ff",
+      "#ffbd31",
+      "#808080"
     ),
     labels = c(
       "County Library Service",
+      "No County Library Service",
+      "Bookmobile Library Service",
       "City Library Service",
       "Agreed Service Through a City Library",
-      "Bookmobile Library Service",
-      "No County Library Service",
-      "No City Library Service"
+      "Non-Certified Library Service",
+      "No Library Service"
     )
   ) %>%
     filter(labels %in% service_areas)
@@ -975,26 +977,36 @@ render_map <- function(
   map_all <- map_all %>%
     filter(CURRENT_LIBNAME_AE %in% map_libs_df$CURRENT_LIBNAME_AE)
 
-  county_libs_map <- county_map %>% filter(county_service != "None")
-  city_libs_map <- municipalities_map %>% filter(city_service != "None")
-  agreed_service_city_map <- municipalities_map %>%
-    filter(agreed_service_city != "None")
+  ## County Views
+  county_libs_map <- county_map %>%
+    filter(county_pop > 0)
   agreed_service_county_map <- county_map %>%
-    filter(agreed_service_county != "None")
-  bookmobile_service_map <- county_map %>% filter(bookmobile_service != "None")
+    filter(NAME == "Beaver")
+  bookmobile_service_map <- county_map %>%
+    filter(bookmobile_pop > 0 & !NAME %in% c("Juab", "Tooele")) #only one town in each gets bookmobile service
+  noncertified_service_county_map <- county_map %>%
+    filter(noncertified_county_pop > 0)
   no_county_service_map <- county_map %>%
     filter(
-      county_service == "None" &
-        bookmobile_service == "None" &
-        agreed_service_county == "None"
+      county_pop == 0 &
+        noncertified_county_pop == 0 &
+        bookmobile_pop == 0 |
+        NAME %in% c("Juab", "Tooele")
     )
-  no_city_service_map <- municipalities_map %>%
-    filter(
-      city_service == "None" &
-        county_service == "None" &
-        bookmobile_service == "None" &
-        agreed_service_city == "None"
-    )
+
+  ## City Views
+  city_libs_map <- municipalities_map %>%
+    filter(`Library_1 Type` == "City")
+  city_libs_county_service_map <- municipalities_map %>%
+    filter(`Library_1 Type` == "County")
+  agreed_service_city_map <- municipalities_map %>%
+    filter(`Library_1 Type` == "Agreed Service")
+  bookmobile_service_city_map <- municipalities_map %>%
+    filter(`Library_1 Type` == "Bookmobile")
+  noncertified_service_city_map <- municipalities_map %>%
+    filter(`Library_1 Type` == "Non-Certified")
+  no_service_map <- municipalities_map %>%
+    filter(`Library_1 Type` == "No Library Service")
 
   ## Set base map
   map <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
@@ -1036,10 +1048,10 @@ render_map <- function(
         weight = 1,
         opacity = 1,
         color = "#4EC3E0",
-        fillOpacity = 0.7,
+        fillOpacity = 0.5,
         highlightOptions = highlightOptions(
           weight = 3,
-          color = "#002F6C",
+          color = "#4EC3E0",
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "county_pane")
@@ -1057,10 +1069,10 @@ render_map <- function(
         weight = 1,
         opacity = 1,
         color = "#002F6C",
-        fillOpacity = 0.7,
+        fillOpacity = 0.5,
         highlightOptions = highlightOptions(
           weight = 3,
-          color = "#4EC3E0",
+          color = "#002F6C",
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "city_pane")
@@ -1082,10 +1094,10 @@ render_map <- function(
         weight = 1,
         opacity = 1,
         color = "#f632f3ff",
-        fillOpacity = 0.7,
+        fillOpacity = 0.5,
         highlightOptions = highlightOptions(
           weight = 3,
-          color = "#a40089ff",
+          color = "#f632f3ff",
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "city_pane")
@@ -1105,10 +1117,10 @@ render_map <- function(
         weight = 1,
         opacity = 1,
         color = "#f632f3ff",
-        fillOpacity = 0.7,
+        fillOpacity = 0.5,
         highlightOptions = highlightOptions(
           weight = 3,
-          color = "#a40089ff",
+          color = "#f632f3ff",
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "county_pane")
@@ -1130,10 +1142,10 @@ render_map <- function(
         weight = 1,
         opacity = 1,
         color = "#08f476ff",
-        fillOpacity = 0.7,
+        fillOpacity = 0.5,
         highlightOptions = highlightOptions(
           weight = 3,
-          color = "#058b00ff",
+          color = "#08f476ff",
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "county_pane")
@@ -1154,11 +1166,11 @@ render_map <- function(
         popupOptions = popupOptions(keepInView = TRUE),
         weight = 1,
         opacity = 1,
-        color = "#f17f33ff",
-        fillOpacity = 0.7,
+        color = "#d3d3d3",
+        fillOpacity = 0.5,
         highlightOptions = highlightOptions(
           weight = 3,
-          color = "#f2322bff",
+          color = "#d3d3d3",
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "county_pane")
@@ -1166,25 +1178,71 @@ render_map <- function(
   }
 
   ## Show Cities without Library Service
-  if (
-    "No City Library Service" %in% service_areas & nrow(no_city_service_map) > 0
-  ) {
+  if ("No Library Service" %in% service_areas & nrow(no_service_map) > 0) {
     map <- map %>%
       addPolygons(
-        data = no_city_service_map,
+        data = no_service_map,
         label = ~ lapply(service_label, HTML),
         popup = ~ lapply(service_popup, HTML),
         popupOptions = popupOptions(keepInView = TRUE),
         weight = 1,
         opacity = 1,
-        color = "#f2322bff",
-        fillOpacity = 0.7,
+        color = "#808080",
+        fillOpacity = 0.5,
         highlightOptions = highlightOptions(
           weight = 3,
-          color = "#f17f33ff",
+          color = "#808080",
           fillOpacity = 0.7
         ),
         options = pathOptions(pane = "city_pane")
+      )
+  }
+
+  if (
+    "Non-Certified Library Service" %in%
+      service_areas &
+      nrow(noncertified_service_city_map) > 0
+  ) {
+    map <- map %>%
+      addPolygons(
+        data = noncertified_service_city_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#ffbd31",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#ffbd31",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
+      )
+  }
+
+  if (
+    "Non-Certified Library Service" %in%
+      service_areas &
+      nrow(noncertified_service_county_map) > 0
+  ) {
+    map <- map %>%
+      addPolygons(
+        data = noncertified_service_county_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#ffbd31",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#ffbd31",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "county_pane")
       )
   }
 
@@ -1192,7 +1250,7 @@ render_map <- function(
   if (!is.null(service_areas)) {
     map <- map %>%
       addLegend(
-        position = c("topright"),
+        position = c("bottomright"),
         colors = service_areas_legend$colors,
         opacity = 0.7,
         labels = service_areas_legend$labels
@@ -1203,12 +1261,19 @@ render_map <- function(
 }
 
 ## testing
-# render_map(
-#   map_libs_df = outlets,
-#   outlets = outlets,
-#   county_map = county_map,
-#   municipalities_map = municipalities_map,
-#   show_libs = F,
-#   #show_service = T
-#   service_areas = c("County Library Service", "No County Library Service", "Bookmobile Library Service", "Agreed Service Through a City Library")
-# )
+render_map(
+  map_libs_df = outlets,
+  outlets = outlets,
+  county_map = county_map,
+  municipalities_map = municipalities_map,
+  show_libs = F,
+  #show_service = T
+  service_areas = c(
+    "County Library Service",
+    "City Library Service",
+    "No County Library Service",
+    "Bookmobile Library Service",
+    "Agreed Service Through a City Library",
+    "Non-Certified Library Service"
+  )
+)

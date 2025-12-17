@@ -1,7 +1,6 @@
 nav_panel(
   title = tags$h5(class = "fw-bold", "Library Service Map"),
   class = " bg-body-secondary align-self-center m-1 p-0 border rounded-3",
-  #style = "width: 95vw; height: 92vh; padding: 0; margin: 1;",
   style = "width: 95vw; padding: 0; margin: 1;",
 
   layout_sidebar(
@@ -30,63 +29,50 @@ nav_panel(
           )
         )
       ),
-      # div(
-      #   class = "mb-2",
-      #   tags$h5(class = "mb-1 mt-0", "Select Libraries by System"),
-      #   pickerInput(
-      #     "st_ae",
-      #     label = NULL,
-      #     choices = ae_name,
-      #     selected = ae_name,
-      #     multiple = TRUE,
-      #     options = list(
-      #       `live-search` = TRUE,
-      #       `actions-box` = TRUE,
-      #       `selected-text-format` = paste0(
-      #         "count > ",
-      #         length(ae_name) - 1
-      #       ),
-      #       `count-selected-text` = "All Library Systems"
+      tags$h5(class = "mb-1 mt-0", "Map Controls"),
+      checkboxInput(
+        "show_libs",
+        "Show Library Locations?",
+        FALSE
+      ),
+
+      # virtualSelectInput(
+      #   "service_areas",
+      #   label = NULL,
+      #   choices = list(
+      #     "County View" = c(
+      #       "County Library Service",
+      #       "Bookmobile Library Service",
+      #       "Non-Certified Library Service",
+      #       "No County Library Service"
+      #     ),
+      #     "City View" = c(
+      #       "City Library Service",
+      #       "No Library Service"
       #     )
       #   )
       # ),
-      div(
-        class = "mb-2",
-        tags$h5(class = "mb-1 mt-0", "Map Controls"),
-        checkboxInput(
-          "show_libs",
-          "Show Library Locations?",
-          FALSE
+
+      checkboxGroupInput(
+        "service_areas",
+        label = NULL,
+        choices = c(
+          "County Library Service",
+          "No County Library Service",
+          "Bookmobile Library Service",
+          "City Library Service",
+          "Agreed Service Through a City Library",
+          "Non-Certified Library Service",
+          "No Library Service"
         ),
-        pickerInput(
-          "service_areas",
-          label = NULL,
-          choices = c(
-            "County Library Service",
-            "City Library Service",
-            "Agreed Service Through a City Library",
-            "Bookmobile Library Service",
-            "No County Library Service",
-            "No City Library Service"
-          ),
-          selected = c(
-            "County Library Service",
-            "City Library Service",
-            "Agreed Service Through a City Library",
-            "Bookmobile Library Service",
-            "No County Library Service",
-            "No City Library Service"
-          ),
-          multiple = T,
-          options = list(
-            `live-search` = TRUE,
-            `actions-box` = TRUE,
-            `selected-text-format` = paste0(
-              "count > ",
-              length(6) - 1
-            ),
-            `count-selected-text` = "All Service Areas"
-          )
+        selected = c(
+          "County Library Service",
+          "No County Library Service",
+          "Bookmobile Library Service",
+          "City Library Service",
+          "Agreed Service Through a City Library",
+          "Non-Certified Library Service",
+          "No Library Service"
         )
       ),
       actionButton(
@@ -95,159 +81,91 @@ nav_panel(
         width = "100%"
       )
     ),
-    layout_columns(
-      fill = TRUE,
-      col_widths = c(12, 12),
-      class = "p-0 m-0",
-      card(
-        title = NULL,
-        min_height = "85vh",
-        max_height = "85vh",
-        nav_panel(
+    navset_card_tab(
+      nav_panel(
+        "Original",
+        card(
           title = NULL,
-          layout_columns(
-            col_widths = c(8, 4),
-            #fill = TRUE,
-            class = "p-0 m-0",
-            leafletOutput("state_map", height = '92vh') |>
-              withSpinner() |>
-              as_fill_carrier(),
+          min_height = "85vh",
+          max_height = "85vh",
+          nav_panel(
+            title = NULL,
             layout_columns(
-              fill = TRUE,
+              col_widths = c(8, 4),
               class = "p-0 m-0",
-              col_widths = c(12, 12, 12, 12),
+              leafletOutput("state_map", height = '92vh') |>
+                withSpinner() |>
+                as_fill_carrier(),
+              # card(
+              #   card_header("About Library Service Areas"),
+              #   class = "my-bg-white",
+              #   p(
+              #     HTML(
+              #       paste0(
+              #         "A library's service area is the number of people in the geographical area for which a public library has been established to offer services and from which (or on behalf of which) the library derives revenue, plus any areas served under contract for which the library is the primary service provider. This figure is determined by the Utah State Library Division based on the most recent U.S. Census Bureau population estimates available. <br><br>",
 
-              value_box(
-                title = NULL,
-                value = NULL,
-                h5(HTML(
-                  "<b>Population With Access to Library Services Through...</b>"
-                )),
-                hr(),
-                htmlOutput("pop_access_city"),
-                htmlOutput("pop_access_county"),
-                htmlOutput("pop_access_bookmobile"),
-                htmlOutput("pop_access_agreed"),
-                showcase = NULL,
-                theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
-              ),
-              value_box(
-                title = NULL,
-                value = NULL,
-                h5(
+              #       )
+              #     )
+              #   )
+              # ),
+              card(
+                card_header("Quick Definitions"),
+                class = "my-bg-white",
+                p(
                   HTML(
-                    "<b>Population With Access to Library Services ONLY Through...</b>"
+                    paste0(
+                      "<b>City Libraries</b> provide library service to residents of the city <br><br>",
+                      "<b>County Libraries</b> provide library service to residents of the county <br><br>",
+                      "<b>Bookmobiles</b> provide library service county-wide, and to some additional locations, either physically with a bookmobile or with online access to library resources <br><br>",
+                      "<b>Agreed Service</b> is a formal agreement for a library to extend service outside of its given jurisdiction <br><br>",
+                      "<b>Non-Certified / Emerging Libraries</b> provide library service but are not certified through the State Library Division <br><br>",
+                      "<b>No Library Service</b> indicates that there is no known library providing service to the area"
+                    )
                   )
-                ),
-                hr(),
-                htmlOutput("pop_access_city_undup"),
-                htmlOutput("pop_access_county_undup"),
-                htmlOutput("pop_access_bookmobile_undup"),
-                htmlOutput("pop_access_agreed_undup"),
-                showcase = NULL,
-                theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
-              ),
-
-              # value_box(
-              #   title = "City Library Service Only",
-              #   value = htmlOutput("pop_access_city_undup"),
-              #   htmlOutput("pop_access_city"),
-              #   showcase = bs_icon("geo-alt-fill"),
-              #   theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
-              #   # title = "Annual Visits",
-              #   # value = htmlOutput("m_visitsCY"),
-              #   # htmlOutput("m_visitsPY"),
-              #   # htmlOutput("m_visitschange"),
-              #   # showcase = bs_icon("people-fill"),
-              #   # theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
-              # ),
-              # value_box(
-              #   title = "County Library Service Only",
-              #   value = htmlOutput("pop_access_county_undup"),
-              #   htmlOutput("pop_access_county"),
-              #   showcase = bs_icon("pin-map-fill"),
-              #   theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
-              #   # title = "Population of Legal Service Area",
-              #   # value = htmlOutput("m_popu_lsaCY"),
-              #   # htmlOutput("m_popu_lsaPY"),
-              #   # htmlOutput("m_popu_lsachange"),
-              #   # showcase = bs_icon("houses"),
-              #   # theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
-              # ),
-              # value_box(
-              #   title = "Bookmobile Service Only",
-              #   value = htmlOutput("pop_access_bookmobile_undup"),
-              #   htmlOutput("pop_access_bookmobile"),
-              #   showcase = bs_icon("truck-front-fill"),
-              #   theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
-              #   # title = "Registered Borrowers",
-              #   # value = htmlOutput("m_regborCY"),
-              #   # htmlOutput("m_regborPY"),
-              #   # htmlOutput("m_regborchange"),
-              #   # showcase = bs_icon("person-vcard"),
-              #   # theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
-              # ),
-              # value_box(
-              #   title = "Agreed Service Only",
-              #   value = htmlOutput("pop_access_agreed_undup"),
-              #   htmlOutput("pop_access_agreed"),
-              #   showcase = bs_icon("check-square-fill"),
-              #   theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
-              #   # title = "FTE",
-              #   # value = htmlOutput("m_fteCY"),
-              #   # htmlOutput("m_ftePY"),
-              #   # htmlOutput("m_ftechange"),
-              #   # showcase = bs_icon("file-person"),
-              #   # theme = value_box_theme(bg = "#ffffff", fg = "#002f6C")
-              # )
+                )
+              )
             )
           )
         )
       ),
-      card(
-        title = NULL,
-        min_height = "85vh",
-        max_height = "85vh",
-        reactableOutput("municipality_table")
-      ) #,
+      ##### How to handle unincorporated areas?
       # nav_panel(
-      #   "Overview",
-      #   layout_sidebar(
-      #     sidebar = sidebar(
-      #       width = "25%",
-      #       pickerInput(
-      #         "table_selection_state",
-      #         "Select a Table",
-      #         choices = list(
-      #           "Overview",
-      #           "Revenue and Expenditures" = c(
-      #             "Revenue",
-      #             "Total Expenditures",
-      #             "Staff Expenditures",
-      #             "Collection Expenditures"
-      #           ),
-      #           "Resources and Services" = c(
-      #             "Circulation",
-      #             "Collections",
-      #             "Visits, Borrowers, Reference, and ILL",
-      #             "Internet Access"
-      #           ),
-      #           "Programs" = c("Number of Programs", "Program Attendance")
-      #         ),
-      #         selected = "Overview",
-      #         multiple = FALSE
-      #       ),
-      #       checkboxInput(
-      #         "percap.state",
-      #         "Show Values Per Capita?",
-      #         value = FALSE
-      #       ) #,
-      #       ##### CSV Download Button #####
-      #       #uiOutput("csv_button.single") #fix reactable output when downloading
-      #     ),
-      #     reactableOutput("table_state")
+      #   "City View",
+      #   card(
+      #     title = NULL,
+      #     min_height = "85vh",
+      #     max_height = "85vh",
+      #     leafletOutput("city_map")
       #   )
-      # )
+      # ),
+      nav_panel(
+        "Table View",
+        card(
+          title = NULL,
+          min_height = "85vh",
+          max_height = "85vh",
+          reactableOutput("municipality_table")
+        )
+      ),
+      nav_panel(
+        "Definitions",
+        card(
+          class = "my-bg-white",
+          p(
+            HTML(
+              paste0(
+                "<b>Service Areas</b> refer to the number of people in the geographical area for which a public library has been established to offer services and from which (or on behalf of which) the library derives revenue, plus any areas served under contract for which the library is the primary service provider. This figure is determined by the Utah State Library Division based on the most recent U.S. Census Bureau population estimates available. <br><br>",
+                "<b>City Libraries</b> provide library service to residents of the city <br><br>",
+                "<b>County Libraries</b> provide library service to residents of the county <br><br>",
+                "<b>Bookmobiles</b> provide library service county-wide, and to some additional locations, either physically with a bookmobile or with online access to library resources <br><br>",
+                "<b>Agreed Service</b> is a formal agreement for a library to extend service outside of its given jurisdiction <br><br>",
+                "<b>Non-Certified / Emerging Libraries</b> provide library service but are not certified through the State Library Division <br><br>",
+                "<b>No Library Service</b> indicates that there is no known library providing service to the area"
+              )
+            )
+          )
+        )
+      )
     )
   )
 )

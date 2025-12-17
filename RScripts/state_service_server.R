@@ -1,28 +1,3 @@
-##### Update Pickers
-
-# observe({
-#   ae_name <- outlets %>%
-#     filter(CNTY %in% input$st_county, FSCSKEY %in% current_FSCS) %>%
-#     reframe(CURRENT_LIBNAME_AE) %>%
-#     distinct() %>%
-#     pull() %>%
-#     sort()
-
-#   updatePickerInput(
-#     session,
-#     "st_ae",
-#     "Select Libraries by System",
-#     choices = ae_name,
-#     selected = ae_name,
-#     options = list(
-#       `live-search` = TRUE,
-#       `actions-box` = TRUE,
-#       `selected-text-format` = paste0("count > ", length(ae_name) - 1),
-#       `count-selected-text` = "All Library Systems"
-#     )
-#   )
-# })
-
 ## Update map control checkboxes so that there is always one library layer showing
 # else it defaults to the endless world and no one wants that
 observeEvent(input$submitButton, {
@@ -54,83 +29,6 @@ observeEvent(input$submitButton, {
   )
 })
 
-# #### Define Columns ####
-
-# table_columns_state <- list(
-#   "Overview" = c(
-#     "TOTINCM",
-#     "TOTSTAFF",
-#     "VLNT",
-#     "VLNT_HRS",
-#     "VISITS",
-#     "REGBOR",
-#     "TOTCIR",
-#     "TOTPHYS",
-#     "GPTERMS",
-#     "TOTPRO",
-#     "TOTATTEN"
-#   ),
-#   "Revenue" = c("TOTINCM", "LOCGVT", "STGVT", "FEDGVT", "OTHINCM"),
-#   "Total Expenditures" = c("TOTOPEXP", "STAFFEXP", "TOTEXPCO", "OTHOPEXP"),
-#   "Staff Expenditures" = c("TOTOPEXP", "STAFFEXP", "SALARIES", "BENEFIT"),
-#   "Collection Expenditures" = c(
-#     "TOTOPEXP",
-#     "TOTEXPCO",
-#     "PRMATEXP",
-#     "ELMATEXP",
-#     "OTHMATEX"
-#   ),
-#   "Circulation" = c(
-#     "TOTCIR",
-#     "PHYSCIR",
-#     "KIDCIRCL",
-#     "ELMATCIR",
-#     "HOTSPOT_CIRC",
-#     "OTHPHCIR",
-#     "EBOOK_CIR",
-#     "EAUDIO_CIR",
-#     "EVIDEO_CIR",
-#     "ESERIAL_CIR"
-#   ),
-#   "Collections" = c("TOTPHYS", "BKVOL", "AUDIO_PH", "VIDEO_PH", "OTHMATS"),
-#   "Number of Programs" = c(
-#     "TOTPRO",
-#     "K0_5PRO",
-#     "K6_11PRO",
-#     "YAPRO",
-#     "ADULTPRO",
-#     "GENPRO"
-#   ),
-#   "Program Attendance" = c(
-#     "TOTATTEN",
-#     "K0_5ATTEN",
-#     "K6_11ATTEN",
-#     "YAATTEN",
-#     "ADULTATTEN",
-#     "GENATTEN"
-#   ),
-#   "Visits, Borrowers, Reference, and ILL" = c(
-#     "VISITS",
-#     "REFERENC",
-#     "REGBOR",
-#     "LOANTO",
-#     "LOANFM"
-#   ),
-#   "Internet Access" = c(
-#     "GPTERMS",
-#     "PITUSR",
-#     "WIFISESS",
-#     "HOTSPOT",
-#     "HOTSPOT_CIRC"
-#   )
-# )
-
-# all_cols_state <- reactive({
-#   req(input$table_selection_state)
-
-#   table_columns_state[[input$table_selection_state]]
-# })
-
 ##### Filter Data #####
 map_libs_filtered <- eventReactive(
   input$submitButton,
@@ -160,7 +58,7 @@ municipalities_map_df <- eventReactive(
   ignoreNULL = FALSE
 )
 
-service_areas_picker <- eventReactive(
+service_areas_reactive <- eventReactive(
   input$submitButton,
   {
     input$service_areas
@@ -176,7 +74,7 @@ output$state_map <- renderLeaflet({
   map_df <- isolate(map_libs_filtered())
   county_df_p <- isolate(county_map_df())
   municipalities_df_p <- isolate(municipalities_map_df())
-  service_areas_p <- isolate(service_areas_picker())
+  service_areas_p <- isolate(service_areas_reactive())
 
   render_map(
     map_libs_df = map_df,
@@ -193,6 +91,7 @@ output$municipality_table <- renderReactable({
   input$submitButton
 
   municipality_p <- isolate(municipalities_map_df())
+  service_areas_p <- isolate(service_areas_reactive())
 
   municipality_p %<>%
     st_drop_geometry()
@@ -201,35 +100,55 @@ output$municipality_table <- renderReactable({
   yes_city <- data.frame()
   yes_bookmobile <- data.frame()
   yes_agreed <- data.frame()
-  no_city <- data.frame()
   no_county <- data.frame()
+  no_service <- data.frame()
+  noncertified <- data.frame()
 
-  if ("County Library Service" %in% input$service_areas) {
-    yes_county <- municipality_p %>% filter(county_service != "None")
+  if ("County Library Service" %in% service_areas_p) {
+    yes_county <- municipality_p %>%
+      filter(`Library_1 Type` == "County" | `Library_2 Type` == "County")
   }
-  if ("City Library Service" %in% input$service_areas) {
-    yes_city <- municipality_p %>% filter(city_service != "None")
+  if ("City Library Service" %in% service_areas_p) {
+    yes_city <- municipality_p %>%
+      filter(`Library_1 Type` == "City" | `Library_2 Type` == "City")
   }
-  if ("Bookmobile Library Service" %in% input$service_areas) {
-    yes_bookmobile <- municipality_p %>% filter(bookmobile_service != "None")
+  if ("Bookmobile Library Service" %in% service_areas_p) {
+    yes_bookmobile <- municipality_p %>%
+      filter(
+        `Library_1 Type` == "Bookmobile" | `Library_2 Type` == "Bookmobile"
+      )
   }
-  if ("Agreed Service Through a City Library" %in% input$service_areas) {
+  if ("Agreed Service Through a City Library" %in% service_areas_p) {
     yes_agreed <- municipality_p %>%
-      filter(agreed_service_city != "None" | agreed_service_county != "None")
+      filter(
+        str_detect(`Library_1 Type`, "Agreed") |
+          str_detect(`Library_2 Type`, "Agreed")
+      )
   }
   if (
-    "No City Library Service" %in%
-      input$service_areas &
-      !"City Library Service" %in% input$service_areas
+    "No Library Service" %in%
+      service_areas_p
   ) {
-    no_city <- municipality_p %>% filter(city_service == "None")
+    no_service <- municipality_p %>%
+      filter(`Library_1 Type` == "No Library Service")
   }
   if (
     "No County Library Service" %in%
-      input$service_areas &
-      !"County Library Service" %in% input$service_areas
+      service_areas_p &
+      !"County Library Service" %in% service_areas_p
   ) {
-    no_county <- municipality_p %>% filter(county_service == "None")
+    no_county <- municipality_p %>%
+      filter(`Library_1 Type` != "County", `Library_2 Type` != "County")
+  }
+  if (
+    "Non-Certified Library Service" %in%
+      service_areas_p
+  ) {
+    noncertified <- municipality_p %>%
+      filter(
+        `Library_1 Type` == "Non-Certified" |
+          `Library_2 Type` == "Non-Certified"
+      )
   }
 
   all <- rbind(
@@ -237,24 +156,25 @@ output$municipality_table <- renderReactable({
     yes_county,
     yes_bookmobile,
     yes_agreed,
-    no_city,
-    no_county
+    no_service,
+    no_county,
+    noncertified
   ) %>%
     distinct()
 
   all %<>%
     select(
       county = CNTY,
-      county_fips = COUNTYNBR,
+      county_fips = COUNTY,
       municipality = NAME,
       city_fips = CITY_FIPS,
-      population = POPULATION,
-      county_service,
-      city_service,
-      bookmobile_service,
-      agreed_service_city,
-      agreed_service_county
+      population = POPESTIMATE,
+      Library_1,
+      `Library_1 Type`,
+      Library_2,
+      `Library_2 Type`
     ) %>%
+    mutate(population = format(population, big.mark = ",")) %>%
     arrange(county, municipality)
 
   # Render reactable
@@ -282,352 +202,164 @@ output$municipality_table <- renderReactable({
         ),
         city_fips = colDef(show = FALSE),
         population = colDef(name = paste0(current_year, " Population")),
-        city_service = colDef(name = "City Library Service"),
-        county_service = colDef(name = "County Library Service"),
-        bookmobile_service = colDef(name = "Bookmobile Service"),
-        agreed_service_city = colDef(name = "Agreed Service to a City"),
-        agreed_service_county = colDef(name = "Agreed Service to a County")
+        Library_1 = colDef(name = "Library 1"),
+        `Library_1 Type` = colDef(name = "Library 1 Type"),
+        Library_2 = colDef(name = "Library 2"),
+        `Library_2 Type` = colDef(name = "Library 2 Type")
       )
     )
 })
 
 
-#### Render Percent Change Tables ####
-# output$table_state <- renderReactable({
-#   req(state_all_libs)
-
-#   render_pct_change_table(
-#     df = state_all_libs,
-#     variable_key = variable_key,
-#     year = current_year,
-#     cols = all_cols_state(),
-#     percap = input$percap.state
-#   )
-# })
-
-##### Value Boxes #####
-
-## City Access
-output$pop_access_city <- renderUI({
+output$city_map <- renderLeaflet({
   input$submitButton
 
-  county_df_p <- isolate(county_map_df())
+  municipalities_df_p <- isolate(municipalities_map_df())
 
-  x <- county_df_p %>%
-    reframe(
-      pop_access_city = sum(pop_access_city, na.rm = T),
-      pop_access_city = format(pop_access_city, big.mark = ",")
+  ## City Views
+  city_libs_map <- municipalities_df_p %>%
+    filter(`Library_1 Type` == "City")
+  city_libs_county_service_map <- municipalities_df_p %>%
+    filter(`Library_1 Type` == "County")
+  agreed_service_city_map <- municipalities_df_p %>%
+    filter(`Library_1 Type` == "Agreed Service")
+  bookmobile_service_city_map <- municipalities_df_p %>%
+    filter(`Library_1 Type` == "Bookmobile")
+  noncertified_service_city_map <- municipalities_df_p %>%
+    filter(`Library_1 Type` %in% c("Non-Certified", "Non-Certified County"))
+  no_service_map <- municipalities_df_p %>%
+    filter(`Library_1 Type` == "No Library Service")
+
+  ## Set base map
+  map <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+    addTiles() %>%
+    addMapPane("county_pane", zIndex = 420) %>%
+    addMapPane("city_pane", zIndex = 430) %>% # Cities will be on top
+    addProviderTiles(
+      "CartoDB.Positron",
+      group = "CartoDB.Positron"
     ) %>%
-    pull(pop_access_city)
+    #setMaxBounds(lng1 = -109, lat1 = 37, lng2 = -114, lat2 = 42) %>%
+    onRender(
+      "function(el, x) {
+          L.control.zoom({position:'bottomright'}).addTo(this);
+        }"
+    )
 
-  HTML(paste0("<b>City Libraries: </b>", x))
-})
-
-output$pop_access_city_undup <- renderUI({
-  input$submitButton
-
-  county_df_p <- isolate(county_map_df())
-
-  x <- county_df_p %>%
-    reframe(
-      pop_access_city_undup = sum(pop_access_city_undup, na.rm = T),
-      pop_access_city_undup = format(pop_access_city_undup, big.mark = ",")
-    ) %>%
-    pull(pop_access_city_undup)
-
-  HTML(paste0("<b>City Libraries: </b>", x))
-})
-
-## County Access
-output$pop_access_county <- renderUI({
-  input$submitButton
-
-  county_df_p <- isolate(county_map_df())
-
-  x <- county_df_p %>%
-    reframe(
-      pop_access_county = sum(pop_access_county, na.rm = T),
-      pop_access_county = format(pop_access_county, big.mark = ",")
-    ) %>%
-    pull(pop_access_county)
-
-  HTML(paste0("<b>County Libraries: </b>", x))
-})
-
-output$pop_access_county_undup <- renderUI({
-  input$submitButton
-
-  county_df_p <- isolate(county_map_df())
-
-  x <- county_df_p %>%
-    reframe(
-      pop_access_county_undup = sum(pop_access_county_undup, na.rm = T),
-      pop_access_county_undup = format(pop_access_county_undup, big.mark = ",")
-    ) %>%
-    pull(pop_access_county_undup)
-
-  HTML(paste0("<b>County Libraries: </b>", x))
-})
-
-## Bookmobile Access
-output$pop_access_bookmobile <- renderUI({
-  input$submitButton
-
-  county_df_p <- isolate(county_map_df())
-
-  x <- county_df_p %>%
-    reframe(
-      pop_access_bookmobile = sum(pop_access_bookmobile, na.rm = T),
-      pop_access_bookmobile = format(pop_access_bookmobile, big.mark = ",")
-    ) %>%
-    pull(pop_access_bookmobile)
-
-  HTML(paste0("<b>Bookmobiles: </b>", x))
-})
-
-output$pop_access_bookmobile_undup <- renderUI({
-  input$submitButton
-
-  county_df_p <- isolate(county_map_df())
-
-  x <- county_df_p %>%
-    reframe(
-      pop_access_bookmobile_undup = sum(pop_access_bookmobile_undup, na.rm = T),
-      pop_access_bookmobile_undup = format(
-        pop_access_bookmobile_undup,
-        big.mark = ","
+  if (nrow(city_libs_map) > 0) {
+    map <- map %>%
+      addPolygons(
+        data = city_libs_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#002F6C",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#000000",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
       )
-    ) %>%
-    pull(pop_access_bookmobile_undup)
-
-  HTML(paste0("<b>Bookmobiles: </b>", x))
-})
-
-## Agreed Service
-output$pop_access_agreed <- renderUI({
-  input$submitButton
-
-  county_df_p <- isolate(county_map_df())
-
-  x <- county_df_p %>%
-    reframe(
-      pop_access_agreed = sum(pop_access_agreed_city, na.rm = T) +
-        #only one case for county, so we'll just sum the _undup column here
-        sum(pop_access_agreed_county_undup, na.rm = T),
-      pop_access_agreed = format(pop_access_agreed, big.mark = ",")
-    ) %>%
-    pull(pop_access_agreed)
-
-  HTML(paste0("<b>", "Service Agreements: </b>", x))
-})
-
-output$pop_access_agreed_undup <- renderUI({
-  input$submitButton
-
-  county_df_p <- isolate(county_map_df())
-
-  x <- county_df_p %>%
-    reframe(
-      pop_access_agreed_undup = sum(pop_access_agreed_city_undup, na.rm = T) +
-        sum(pop_access_agreed_county_undup, na.rm = T),
-      pop_access_agreed_undup = format(pop_access_agreed_undup, big.mark = ",")
-    ) %>%
-    pull(pop_access_agreed_undup)
-
-  HTML(paste0("<b>", "Service Agreements: ", "</b>", x))
-})
-
-
-###### Visits ######
-output$m_visitsCY <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "VISITS", pull = "CY")
-})
-output$m_visitsPY <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "VISITS", pull = "PY")
-})
-output$m_visitschange <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "VISITS", pull = "change")
-})
-
-
-###### Registered Borrowers ######
-output$m_regborCY <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "REGBOR", pull = "CY")
-})
-output$m_regborPY <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "REGBOR", pull = "PY")
-})
-output$m_regborchange <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "REGBOR", pull = "change")
-})
-
-
-###### LSA ######
-output$m_popu_lsaCY <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "POPU_LSA", pull = "CY")
-})
-output$m_popu_lsaPY <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "POPU_LSA", pull = "PY")
-})
-output$m_popu_lsachange <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "POPU_LSA", pull = "change")
-})
-
-###### Circulation ######
-output$m_totcirCY <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "TOTCIR", pull = "CY")
-})
-output$m_totcirPY <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "TOTCIR", pull = "PY")
-})
-output$m_totcirchange <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "TOTCIR", pull = "change")
-})
-
-###### Revenue ######
-output$m_totincmCY <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "TOTINCM", pull = "CY")
-})
-output$m_totincmPY <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "TOTINCM", pull = "PY")
-})
-output$m_totincmchange <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "TOTINCM", pull = "change")
-})
-
-###### FTE ######
-output$m_fteCY <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "TOTSTAFF", pull = "CY")
-})
-output$m_ftePY <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "TOTSTAFF", pull = "PY")
-})
-output$m_ftechange <- renderUI({
-  input$submitButton
-
-  FSCS <- isolate(map_libs_filtered()$FSCSKEY)
-
-  df <- pls %>%
-    filter(FSCSKEY %in% FSCS)
-
-  get_valuebox(df, year = current_year, "TOTSTAFF", pull = "change")
+  }
+  if (nrow(city_libs_county_service_map) > 0) {
+    map <- map %>%
+      addPolygons(
+        data = city_libs_county_service_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#4EC3E0",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#000000",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
+      )
+  }
+  if (nrow(agreed_service_city_map) > 0) {
+    map <- map %>%
+      addPolygons(
+        data = agreed_service_city_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#f632f3ff",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#000000",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
+      )
+  }
+  if (nrow(bookmobile_service_city_map) > 0) {
+    map <- map %>%
+      addPolygons(
+        data = bookmobile_service_city_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#08f476ff",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#000000",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
+      )
+  }
+  if (nrow(noncertified_service_city_map) > 0) {
+    map <- map %>%
+      addPolygons(
+        data = noncertified_service_city_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#ffbd31",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#000000",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
+      )
+  }
+  if (nrow(no_service_map) > 0) {
+    map <- map %>%
+      addPolygons(
+        data = no_service_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#808080",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#000000",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
+      )
+  }
+
+  map
 })

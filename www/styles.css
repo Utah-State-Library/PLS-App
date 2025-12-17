@@ -76,6 +76,27 @@ body {
     font-family: "Raleway", sans-serif;
 }
 
+/* .custom-check input[type='checkbox'] {
+    position: absolute;
+    opacity: 0;
+}
+
+.custom-check .checkmark {
+    height: 16px;
+    width: 16px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-right: 6px;
+    vertical-align: middle;
+    border: 2px solid #888;
+}
+
+.custom-check input:checked+.checkmark {
+    background-color: var(--box-color);
+    border-color: var(--box-color);
+} */
+
+
 /* Set Margins and Padding for Heading Calls */
 h1,
 .h1,

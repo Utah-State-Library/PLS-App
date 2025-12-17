@@ -103,7 +103,7 @@ nav_panel(
         )
       ),
       nav_panel(
-        "Percent Change Tables",
+        "Change from Last Year",
         layout_sidebar(
           sidebar = sidebar(
             width = "25%",
@@ -160,6 +160,21 @@ nav_panel(
           width = c(12, 12),
           sidebar = sidebar(
             width = "25%",
+            # radioGroupButtons(
+            #   "hc_col.state",
+            #   "Select a Value to Graph",
+            #   choices = c(
+            #     "Visits" = "VISITS",
+            #     "Revenue" = "TOTINCM",
+            #     "FTE" = "TOTSTAFF",
+            #     "Card Holders" = "REGBOR",
+            #     "Number of Programs" = "TOTPRO",
+            #     "Program Attendance" = "TOTATTEN",
+            #     "Total Collection" = "TOTPHYS",
+            #     "Total Circulation" = "TOTCIR"
+            #   ),
+            #   direction = "vertical"
+            # ),
             pickerInput(
               "hc_col.state",
               "Select a Value to Graph",
