@@ -977,18 +977,15 @@ render_map <- function(
   map_all <- map_all %>%
     filter(CURRENT_LIBNAME_AE %in% map_libs_df$CURRENT_LIBNAME_AE)
 
-  county_libs_map <- county_map %>% filter(county_pop > 0)
-  city_libs_map <- municipalities_map %>% filter(`Library_1 Type` == "City")
-  agreed_service_city_map <- municipalities_map %>%
-    filter(`Library_1 Type` == "Agreed Service")
+  ## County Views
+  county_libs_map <- county_map %>%
+    filter(county_pop > 0)
   agreed_service_county_map <- county_map %>%
     filter(NAME == "Beaver")
   bookmobile_service_map <- county_map %>%
     filter(bookmobile_pop > 0 & !NAME %in% c("Juab", "Tooele")) #only one town in each gets bookmobile service
   noncertified_service_county_map <- county_map %>%
     filter(noncertified_county_pop > 0)
-  noncertified_service_city_map <- municipalities_map %>%
-    filter(`Library_1 Type` == "Non-Certified")
   no_county_service_map <- county_map %>%
     filter(
       county_pop == 0 &
@@ -996,6 +993,18 @@ render_map <- function(
         bookmobile_pop == 0 |
         NAME %in% c("Juab", "Tooele")
     )
+
+  ## City Views
+  city_libs_map <- municipalities_map %>%
+    filter(`Library_1 Type` == "City")
+  city_libs_county_service_map <- municipalities_map %>%
+    filter(`Library_1 Type` == "County")
+  agreed_service_city_map <- municipalities_map %>%
+    filter(`Library_1 Type` == "Agreed Service")
+  bookmobile_service_city_map <- municipalities_map %>%
+    filter(`Library_1 Type` == "Bookmobile")
+  noncertified_service_city_map <- municipalities_map %>%
+    filter(`Library_1 Type` == "Non-Certified")
   no_service_map <- municipalities_map %>%
     filter(`Library_1 Type` == "No Library Service")
 

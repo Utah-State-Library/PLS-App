@@ -172,9 +172,9 @@ output$municipality_table <- renderReactable({
       Library_1,
       `Library_1 Type`,
       Library_2,
-      `Library_2 Type`,
-      notes = Notes
+      `Library_2 Type`
     ) %>%
+    mutate(population = format(population, big.mark = ",")) %>%
     arrange(county, municipality)
 
   # Render reactable
@@ -208,4 +208,158 @@ output$municipality_table <- renderReactable({
         `Library_2 Type` = colDef(name = "Library 2 Type")
       )
     )
+})
+
+
+output$city_map <- renderLeaflet({
+  input$submitButton
+
+  municipalities_df_p <- isolate(municipalities_map_df())
+
+  ## City Views
+  city_libs_map <- municipalities_df_p %>%
+    filter(`Library_1 Type` == "City")
+  city_libs_county_service_map <- municipalities_df_p %>%
+    filter(`Library_1 Type` == "County")
+  agreed_service_city_map <- municipalities_df_p %>%
+    filter(`Library_1 Type` == "Agreed Service")
+  bookmobile_service_city_map <- municipalities_df_p %>%
+    filter(`Library_1 Type` == "Bookmobile")
+  noncertified_service_city_map <- municipalities_df_p %>%
+    filter(`Library_1 Type` %in% c("Non-Certified", "Non-Certified County"))
+  no_service_map <- municipalities_df_p %>%
+    filter(`Library_1 Type` == "No Library Service")
+
+  ## Set base map
+  map <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+    addTiles() %>%
+    addMapPane("county_pane", zIndex = 420) %>%
+    addMapPane("city_pane", zIndex = 430) %>% # Cities will be on top
+    addProviderTiles(
+      "CartoDB.Positron",
+      group = "CartoDB.Positron"
+    ) %>%
+    #setMaxBounds(lng1 = -109, lat1 = 37, lng2 = -114, lat2 = 42) %>%
+    onRender(
+      "function(el, x) {
+          L.control.zoom({position:'bottomright'}).addTo(this);
+        }"
+    )
+
+  if (nrow(city_libs_map) > 0) {
+    map <- map %>%
+      addPolygons(
+        data = city_libs_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#002F6C",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#000000",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
+      )
+  }
+  if (nrow(city_libs_county_service_map) > 0) {
+    map <- map %>%
+      addPolygons(
+        data = city_libs_county_service_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#4EC3E0",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#000000",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
+      )
+  }
+  if (nrow(agreed_service_city_map) > 0) {
+    map <- map %>%
+      addPolygons(
+        data = agreed_service_city_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#f632f3ff",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#000000",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
+      )
+  }
+  if (nrow(bookmobile_service_city_map) > 0) {
+    map <- map %>%
+      addPolygons(
+        data = bookmobile_service_city_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#08f476ff",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#000000",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
+      )
+  }
+  if (nrow(noncertified_service_city_map) > 0) {
+    map <- map %>%
+      addPolygons(
+        data = noncertified_service_city_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#ffbd31",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#000000",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
+      )
+  }
+  if (nrow(no_service_map) > 0) {
+    map <- map %>%
+      addPolygons(
+        data = no_service_map,
+        label = ~ lapply(service_label, HTML),
+        popup = ~ lapply(service_popup, HTML),
+        popupOptions = popupOptions(keepInView = TRUE),
+        weight = 1,
+        opacity = 1,
+        color = "#808080",
+        fillOpacity = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#000000",
+          fillOpacity = 0.7
+        ),
+        options = pathOptions(pane = "city_pane")
+      )
+  }
+
+  map
 })

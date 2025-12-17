@@ -41,8 +41,8 @@ pls <- readRDS("data/pls_national.rds") %>%
 
 current_year <- max(as.numeric(pls$FISCAL_YEAR))
 
-census <- read.csv("data/census.csv") %>%
-  select(COUNTY, PLACE, NAME, POPULATION = contains(as.character(current_year)))
+# census <- read.csv("data/census.csv") %>%
+#   select(COUNTY, PLACE, NAME, POPULATION = contains(as.character(current_year)))
 
 variable_key <- read.csv("data/pls_variable_key.csv")
 
@@ -63,27 +63,6 @@ county_shp <- sf::st_read("data/counties/Counties.shp") %>%
   mutate(COUNTYNBR = as.numeric(COUNTYNBR)) %>%
   mutate(NAME = str_to_title(NAME)) %>%
   sf::st_transform('+proj=longlat +datum=WGS84')
-# left_join(
-#   census %>%
-#     filter(PLACE == 0) %>%
-#     select(COUNTY, POPULATION) %>%
-#     mutate(POPULATION = format(POPULATION, big.mark = ",")),
-#   by = c("COUNTY_FIPS" = "COUNTY")
-# ) %>%
-# left_join(
-#   census %>%
-#     filter(PLACE == 99990) %>%
-#     select(COUNTY, POPULATION_CNTY_BALANCE = POPULATION) %>%
-#     mutate(
-#       POPULATION_CNTY_BALANCE = format(
-#         POPULATION_CNTY_BALANCE,
-#         big.mark = ","
-#       )
-#     ),
-#   by = c("COUNTY_FIPS" = "COUNTY")
-# ) %>%
-# mutate(across(c(POPULATION, POPULATION_CNTY_BALANCE), ~ gsub(",", "", .))) %>%
-# mutate(across(c(POPULATION, POPULATION_CNTY_BALANCE), ~ as.numeric(.))) %>%
 
 municipalities <- sf::st_read("data/municipalities/Municipalities.shp") %>%
   select(NAME, COUNTYNBR, CITY_FIPS = FIPS, geometry) %>%

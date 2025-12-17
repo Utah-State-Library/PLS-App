@@ -50,7 +50,7 @@ map_all <- outlets %>%
 
 #### READ IN UPDATED VERSION AND SAVE
 # census_by_city <- googlesheets4::read_sheet(
-#   "https://docs.google.com/spreadsheets/d/1N69m_uKvzqQPL0ad78zEnqckBd_ZhPmW3edCuivqN8k/edit?usp=sharing",
+#   "https://docs.google.com/spreadsheets/d/1Ch9ZM6AxTyy9bG8w9qo_0gOG6wNvlk2jIZ60K4eT5K0/edit?usp=sharing",
 #   sheet = "Census Data - By County"
 # ) %>%
 #   filter(PLACE != 0)
@@ -142,8 +142,8 @@ municipalities_map %<>%
 #####
 
 #### READ IN UPDATED VERSION AND SAVE
-# census_by_county <- read_sheet(
-#   "https://docs.google.com/spreadsheets/d/1N69m_uKvzqQPL0ad78zEnqckBd_ZhPmW3edCuivqN8k/edit?usp=sharing",
+# census_by_county <- googlesheets4::read_sheet(
+#   "https://docs.google.com/spreadsheets/d/1Ch9ZM6AxTyy9bG8w9qo_0gOG6wNvlk2jIZ60K4eT5K0/edit?usp=sharing",
 #   sheet = "Census Data - By County"
 # ) %>%
 #   filter(PLACE != 0) %>%
