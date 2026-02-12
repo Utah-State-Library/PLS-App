@@ -404,7 +404,10 @@ render_table <- function(
       defaultColDef = colDef(
         align = "left",
         style = if (color_table) {
-          color_scales(data, colors = c("#4EC3E0", "#0086BF", "#002F6C"))
+          color_scales(
+            data,
+            colors = c("#ffffff", "#4EC3E0", "#0080aa", "#002F6C")
+          )
         } else {
           NULL
         }
@@ -724,8 +727,17 @@ render_comparison_hc <- function(
       ),
       headerFormat = ""
     ) %>%
-    hc_xAxis(allowDecimals = FALSE) %>%
-    hc_yAxis(title = list(text = paste(col_name_pretty, per_cap_label))) %>%
+    hc_xAxis(
+      allowDecimals = FALSE,
+      labels = list(style = list(fontSize = "15px"))
+    ) %>%
+    hc_yAxis(
+      title = list(
+        text = paste(col_name_pretty, per_cap_label),
+        style = list(fontSize = "15px")
+      ),
+      labels = list(style = list(fontSize = "15px"))
+    ) %>%
     hc_title(text = paste(col_name_pretty, per_cap_label)) %>%
     hc_subtitle(text = subtitle) %>%
     hc_caption(
@@ -919,8 +931,17 @@ render_statewide_hc <- function(
         ),
         headerFormat = ""
       ) %>%
-      hc_xAxis(allowDecimals = FALSE) %>%
-      hc_yAxis(title = list(text = paste(col_name_pretty, per_cap_label))) %>%
+      hc_xAxis(
+        allowDecimals = FALSE,
+        labels = list(style = list(fontSize = "15px"))
+      ) %>%
+      hc_yAxis(
+        title = list(
+          text = paste(col_name_pretty, per_cap_label),
+          style = list(fontSize = "15px")
+        ),
+        labels = list(style = list(fontSize = "15px"))
+      ) %>%
       hc_title(text = paste(col_name_pretty, per_cap_label))
   }
 

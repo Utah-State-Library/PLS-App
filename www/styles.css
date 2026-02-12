@@ -67,6 +67,12 @@
     background-color: #d0d1d2;
 }
 
+/* Basic CSS to potentially help with overlap, might need adjustment */
+.bootstrap-select .dropdown-menu {
+    z-index: 10000 !important;
+    /* Ensure high z-index */
+}
+
 .my-bg-white {
     background-color: #ffffff;
 }

@@ -68,3 +68,17 @@ currency_cols <- c(
   "FEDGVT",
   "OTHINCM"
 )
+
+
+### Picker Input Lists
+
+hc_graph_list <- c(
+  "Visits" = "VISITS",
+  "Revenue" = "TOTINCM",
+  "FTE" = "TOTSTAFF",
+  "Card Holders" = "REGBOR",
+  "Number of Programs" = "TOTPRO",
+  "Program Attendance" = "TOTATTEN",
+  "Total Collection" = "TOTPHYS",
+  "Total Circulation" = "TOTCIR"
+)

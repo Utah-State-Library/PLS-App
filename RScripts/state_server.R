@@ -1,29 +1,4 @@
-##### Update Pickers
-
-# observe({
-#   ae_name <- outlets %>%
-#     filter(CNTY %in% input$st_county, FSCSKEY %in% current_FSCS) %>%
-#     reframe(CURRENT_LIBNAME_AE) %>%
-#     distinct() %>%
-#     pull() %>%
-#     sort()
-
-#   updatePickerInput(
-#     session,
-#     "st_ae",
-#     "Select Libraries by System",
-#     choices = ae_name,
-#     selected = ae_name,
-#     options = list(
-#       `live-search` = TRUE,
-#       `actions-box` = TRUE,
-#       `selected-text-format` = paste0("count > ", length(ae_name) - 1),
-#       `count-selected-text` = "All Library Systems"
-#     )
-#   )
-# })
-
-# #### Define Columns ####
+#### Define Columns ####
 
 table_columns_state <- list(
   "Overview" = c(
@@ -127,7 +102,22 @@ output$hc_comparison_state <- renderHighchart({
     df = pls,
     variable_key = variable_key,
     col = input$hc_col.state,
-    per_cap = input$st_hc_percap,
+    per_cap = TRUE,
+    year = input$st_year,
+    restrict_years = TRUE
+  )
+})
+
+#### Render Totals HC ####
+
+output$hc_totals_state <- renderHighchart({
+  req(input$st_year)
+
+  render_statewide_hc(
+    df = pls,
+    variable_key = variable_key,
+    col = input$hc_col_totals.state,
+    per_cap = FALSE,
     year = input$st_year,
     restrict_years = TRUE
   )
@@ -141,7 +131,7 @@ output$library_header.state <- renderUI({
 
   HTML(paste0(
     "<h1>",
-    input$year.single,
+    input$year.state,
     " Certified Utah Libraries at a Glance",
     "</h1>"
   ))

@@ -18,72 +18,72 @@ nav_panel(
         accordion_panel(
           title = "Data Selection",
           icon = bsicons::bs_icon("filter-square-fill", class = "icon-color"),
-          div(
-            class = "mb-2",
-            tags$h5(class = "mb-1 mt-0", "Select a Table"),
-            pickerInput(
-              "table_selection",
-              label = NULL,
-              choices = list(
-                "Overview",
-                "Revenue and Expenditures" = c(
-                  "Revenue",
-                  "Total Expenditures",
-                  "Staff Expenditures",
-                  "Collection Expenditures"
-                ),
-                "Resources and Services" = c(
-                  "Circulation",
-                  "Collections",
-                  "Visits, Borrowers, Reference, and ILL",
-                  "Internet Access"
-                ),
-                "Programs" = c("Number of Programs", "Program Attendance")
+          # div(
+          #   class = "mb-2",
+          #   tags$h5(class = "mb-1 mt-0", "Select a Table"),
+          pickerInput(
+            "table_selection",
+            label = "Select a Table",
+            choices = list(
+              "Overview",
+              "Revenue and Expenditures" = c(
+                "Revenue",
+                "Total Expenditures",
+                "Staff Expenditures",
+                "Collection Expenditures"
               ),
-              selected = "Overview",
-              multiple = FALSE
-            )
+              "Resources and Services" = c(
+                "Circulation",
+                "Collections",
+                "Visits, Borrowers, Reference, and ILL",
+                "Internet Access"
+              ),
+              "Programs" = c("Number of Programs", "Program Attendance")
+            ),
+            selected = "Overview",
+            multiple = FALSE
+            #)
           ),
-          div(
-            class = "mb-2",
-            tags$h5(class = "mb-1 mt-0", "Select Libraries"),
-            pickerInput(
-              "library.table",
-              label = NULL,
-              choices = libnames,
-              selected = libnames,
-              multiple = TRUE,
-              options = list(
-                `live-search` = TRUE,
-                `actions-box` = TRUE,
-                `selected-text-format` = paste0(
-                  "count > ",
-                  length(libnames) - 1
-                ),
-                `count-selected-text` = "All Libraries"
-              )
+          # div(
+          #   class = "mb-2",
+          #   tags$h5(class = "mb-1 mt-0", "Select Libraries"),
+          pickerInput(
+            "library.table",
+            label = "Select Libraries",
+            choices = libnames,
+            selected = libnames,
+            multiple = TRUE,
+            options = list(
+              `live-search` = TRUE,
+              `actions-box` = TRUE,
+              `selected-text-format` = paste0(
+                "count > ",
+                length(libnames) - 1
+              ),
+              `count-selected-text` = "All Libraries"
             )
+            # )
           ),
-          div(
-            class = "mb-2",
-            tags$h5(class = "mb-1 mt-0", "Fiscal year"),
-            pickerInput(
-              "year.table",
-              label = NULL,
-              choices = years,
-              selected = max(years),
-              multiple = TRUE,
-              options = list(
-                `live-search` = TRUE,
-                `actions-box` = TRUE,
-                `selected-text-format` = paste0(
-                  "count > ",
-                  length(years) - 1
-                ),
-                `count-selected-text` = "All Years"
-              )
+          # div(
+          #   class = "mb-2",
+          #   tags$h5(class = "mb-1 mt-0", "Fiscal year"),
+          pickerInput(
+            "year.table",
+            label = "Select Years",
+            choices = years,
+            selected = max(years),
+            multiple = TRUE,
+            options = list(
+              `live-search` = TRUE,
+              `actions-box` = TRUE,
+              `selected-text-format` = paste0(
+                "count > ",
+                length(years) - 1
+              ),
+              `count-selected-text` = "All Years"
             )
           )
+          #)
         ),
         accordion_panel(
           title = "Comparison Options",

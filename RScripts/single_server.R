@@ -117,48 +117,6 @@ output$library_header.single <- renderUI({
   ))
 })
 
-
-# ## Render Conditional Inputs
-# output$conditional_inputs.single <- renderUI({
-#   req(input$active_tab_single)
-#
-#   if (input$active_tab_single == "Percent Change Tables") {
-#     tagList(
-#       pickerInput("table_selection_single",
-#                   "Select a Table",
-#                   choices = list(
-#                     "Overview",
-#                     "Revenue and Expenditures" = c("Revenue", "Total Expenditures", "Staff Expenditures", "Collection Expenditures"),
-#                     "Resources and Services" = c("Circulation", "Collections", "Visits, Borrowers, Reference, and ILL", "Internet Access"),
-#                     "Programs" = c("Number of Programs", "Program Attendance")
-#                   ),
-#                   selected = "Overview",
-#                   multiple = FALSE),
-#       checkboxInput("percap.single",
-#                     "Show Values Per Capita?",
-#                     value = FALSE),
-#       hr()
-#     )
-#   } else if (input$active_tab_single == "Comparison Chart") {
-#     tagList(
-#       pickerInput("hc_col.single",
-#                   "Select a Value to Graph",
-#                   choices = c("Visits" = "VISITS",
-#                               "Revenue" = "TOTINCM",
-#                               "FTE" = "TOTSTAFF",
-#                               "Card Holders" = "REGBOR",
-#                               "Number of Programs" = "TOTPRO",
-#                               "Program Attendance" = "TOTATTEN",
-#                               "Total Collection" = "TOTPHYS",
-#                               "Total Circulation" = "TOTCIR")),
-#       checkboxInput("under_50k.single",
-#                     "Include only libraries serving < 50,000?",
-#                     value = FALSE),
-#       hr()
-#     )
-#   }
-# })
-
 #### Render Percent Change Tables ####
 
 output$table_single <- renderReactable({

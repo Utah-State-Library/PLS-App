@@ -18,7 +18,7 @@ nav_panel(
         "All population data comes from the Census Bureau's annual estimate of the population, and can be found <a href='https://www.census.gov/data/datasets/time-series/demo/popest/2020s-total-cities-and-towns.html' target='_blank'>here</a>."
       ))),
       p(HTML(paste0(
-        "<b>Utah Geospatial Resource Center:</b>",
+        "<b>Utah Geospatial Resource Center: </b>",
         "Geographic boundary data for municipalities and counties can be found <a href='https://opendata.gis.utah.gov/' target='_blank'>here</a>"
       ))),
 

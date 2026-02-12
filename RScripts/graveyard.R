@@ -172,36 +172,3 @@
 #     closeOnClickOutside = FALSE # Prevent closing without selection
 #   )
 # })
-
-### State Page
-
-# pickerInput(
-#   "st_city",
-#   "Select Libraries by City",
-#   choices = cities,
-#   selected = cities,
-#   multiple = TRUE,
-#   options = list(`live-search`=TRUE,
-#                  `actions-box` = TRUE,
-#                  `selected-text-format` = paste0("count > ", length(cities) -1),
-#                  `count-selected-text` = "All Cities"
-#   )
-# ),
-
-# observe({
-#
-#   counties <- toupper(input$st_county)
-#
-#   cities <- librarykey %>%
-#     filter(COUNTY %in% input$st_county) %>%
-#     summarise(CITY) %>% distinct() %>% pull() %>% sort()
-#
-#   updatePickerInput(session,
-#                     "st_city",
-#                     "Select Libraries by City",
-#                     choices = cities,
-#                     selected = cities,
-#                     options = list(`live-search`=TRUE,
-#                                    `actions-box` = TRUE,
-#                                    `selected-text-format` = paste0("count > ", length(cities) -1), `count-selected-text` = "All Cities"))
-# })
