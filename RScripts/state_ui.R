@@ -9,37 +9,19 @@ nav_panel(
       title = "Filters",
       width = "25%",
       open = FALSE,
-      div(
-        class = "mb-2",
-        tags$h5(class = "mb-1 mt-0", "Select a Year"),
-        pickerInput(
-          "st_year",
-          label = NULL,
-          choices = years,
-          selected = max(years),
-          multiple = FALSE
-        )
-      ),
+      pickerInput(
+        "st_year",
+        label = "Select a Year",
+        choices = years,
+        selected = max(years),
+        multiple = FALSE
+      )
     ),
 
     #### Main Body ####
 
     navset_card_tab(
       id = "active_tab_ut",
-      # title = popover(
-      #   span("Filters", bs_icon("gear")),
-      #   div(
-      #     class = "mb-2",
-      #     tags$h5(class = "mb-1 mt-0", "Select a Year"),
-      #     pickerInput(
-      #       "st_year",
-      #       label = NULL,
-      #       choices = years,
-      #       selected = max(years),
-      #       multiple = FALSE
-      #     )
-      #   )
-      # ),
       nav_panel(
         "Overview",
         uiOutput("library_header.state"),
@@ -106,7 +88,7 @@ nav_panel(
         "Change from Last Year",
         layout_sidebar(
           sidebar = sidebar(
-            width = "25%",
+            width = "35%",
             pickerInput(
               "table_selection_state",
               "Select a Table",
@@ -127,20 +109,15 @@ nav_panel(
                 "Programs" = c("Number of Programs", "Program Attendance")
               ),
               selected = "Overview",
-              multiple = FALSE
+              multiple = FALSE,
+              options = list(size = 10)
             ),
             checkboxInput(
               "percap.state",
               "Show Values Per Capita?",
               value = FALSE
-            ) #,
-            ##### CSV Download Button #####
-            #uiOutput("csv_button.single") #fix reactable output when downloading
-          ),
-          reactableOutput("table_state"),
-          card(
-            class = "my-bg-white",
-            fill = FALSE,
+            ),
+            hr(),
             p(
               HTML(
                 paste0(
@@ -150,7 +127,11 @@ nav_panel(
                 )
               )
             )
-          )
+
+            ##### CSV Download Button #####
+            #uiOutput("csv_button.single") #fix reactable output when downloading
+          ),
+          reactableOutput("table_state")
         )
       ),
       nav_panel(
@@ -159,22 +140,7 @@ nav_panel(
         layout_sidebar(
           width = c(12, 12),
           sidebar = sidebar(
-            width = "25%",
-            # radioGroupButtons(
-            #   "hc_col.state",
-            #   "Select a Value to Graph",
-            #   choices = c(
-            #     "Visits" = "VISITS",
-            #     "Revenue" = "TOTINCM",
-            #     "FTE" = "TOTSTAFF",
-            #     "Card Holders" = "REGBOR",
-            #     "Number of Programs" = "TOTPRO",
-            #     "Program Attendance" = "TOTATTEN",
-            #     "Total Collection" = "TOTPHYS",
-            #     "Total Circulation" = "TOTCIR"
-            #   ),
-            #   direction = "vertical"
-            # ),
+            width = "35%",
             pickerInput(
               "hc_col.state",
               "Select a Value to Graph",
@@ -187,17 +153,10 @@ nav_panel(
                 "Program Attendance" = "TOTATTEN",
                 "Total Collection" = "TOTPHYS",
                 "Total Circulation" = "TOTCIR"
-              )
+              ),
+              options = list(size = 10)
             ),
-            checkboxInput(
-              "st_hc_percap",
-              "Show Values Per Capita?",
-              value = TRUE
-            )
-          ),
-          card(class = "my-bg-white", highchartOutput("hc_comparison_state")),
-          card(
-            class = "my-bg-white",
+            hr(),
             p(
               HTML(
                 paste0(
@@ -213,7 +172,33 @@ nav_panel(
                 )
               )
             )
-          )
+          ),
+          card(class = "my-bg-white", highchartOutput("hc_comparison_state")),
+        )
+      ),
+      nav_panel(
+        "Totals Chart",
+
+        layout_sidebar(
+          width = c(12, 12),
+          sidebar = sidebar(
+            width = "35%",
+            pickerInput(
+              "hc_col_totals.state",
+              "Select a Value to Graph",
+              choices = hc_graph_list, # defined in lists.R
+              options = list(size = 10)
+            ),
+            hr(),
+            p(
+              HTML(
+                paste0(
+                  "<b>This chart shows statewide totals for different library metrics.</b><br><br>"
+                )
+              )
+            )
+          ),
+          card(class = "my-bg-white", highchartOutput("hc_totals_state")),
         )
       )
     )

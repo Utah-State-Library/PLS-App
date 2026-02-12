@@ -19,12 +19,11 @@ library(htmlwidgets)
 library(shinya11y)
 library(sf)
 library(thematic)
-#library(googlesheets4)
 
 #### Color Palette ####
-head_color <- "#002F6C"
-sub1_color <- "#0086BF"
-sub2_color <- "#4EC3E0"
+# head_color <- "#002F6C"
+# sub1_color <- "#0086BF"
+# sub2_color <- "#4EC3E0"
 
 #### Set Options ####
 hcoptslang <- getOption("highcharter.lang")
@@ -36,13 +35,13 @@ options(highcharter.lang = hcoptslang)
 
 # Created in `./***/Combine PLS Data.R`
 pls <- readRDS("data/pls_national.rds") %>%
-  filter(STABR == "UT", !str_detect(CURRENT_LIBNAME, "Bookmobile")) %>%
+  filter(
+    STABR == "UT",
+    !str_detect(CURRENT_LIBNAME, "Bookmobile|Garden City")
+  ) %>%
   mutate(CNTY = str_to_title(CNTY), CITY = str_to_title(CITY))
 
 current_year <- max(as.numeric(pls$FISCAL_YEAR))
-
-# census <- read.csv("data/census.csv") %>%
-#   select(COUNTY, PLACE, NAME, POPULATION = contains(as.character(current_year)))
 
 variable_key <- read.csv("data/pls_variable_key.csv")
 
@@ -141,11 +140,10 @@ ui <- #function(req) {
       #   )
       # ),
 
-      #source("RScripts/state_service_ui.R", local = TRUE)$value,
       source("RScripts/state_ui.R", local = TRUE)$value,
       source("RScripts/single_ui.R", local = TRUE)$value,
       source("RScripts/tables_menu_ui.R", local = TRUE)$value,
-      source("RScripts/state_service_ui.R", local = TRUE)$value,
+      #source("RScripts/state_service_ui.R", local = TRUE)$value,
       nav_spacer(),
       source("RScripts/about_ui.R", local = TRUE)$value
     )
@@ -154,20 +152,10 @@ ui <- #function(req) {
 
 #### Server ####
 server <- function(input, output, session) {
-  # observe({
-  #   # Trigger this observer every time an input changes
-  #   reactiveValuesToList(input)
-  #   session$doBookmark()
-  # })
-  # onBookmarked(function(url) {
-  #   updateQueryString(url)
-  # })
-
-  #source("RScripts/state_service_ui.R", local = TRUE)$value
   source("RScripts/state_server.R", local = TRUE)$value
   source("RScripts/single_server.R", local = TRUE)$value
   source("RScripts/tables_server.R", local = TRUE)$value
-  source("RScripts/state_service_server.R", local = TRUE)$value
+  #source("RScripts/state_service_server.R", local = TRUE)$value
 }
 
 
@@ -176,6 +164,3 @@ shinyApp(
   ui = ui,
   server = server #, enableBookmarking = "url"
 )
-
-## notes for tomorrow - check outlet file against pls file
-## add logic for system dropdown if show libs not selected, etc.

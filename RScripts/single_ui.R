@@ -8,29 +8,22 @@ nav_panel(
     sidebar = sidebar(
       title = "Filters",
       width = "25%",
-
-      div(
-        class = "mb-2",
-        tags$h5(class = "mb-1 mt-0", "Select a Library"),
-        pickerInput(
-          "library.single",
-          label = NULL,
-          choices = libnames,
-          selected = libnames[1],
-          multiple = FALSE
-        )
+      pickerInput(
+        "library.single",
+        label = "Select a Library",
+        choices = libnames,
+        selected = libnames[1],
+        multiple = FALSE,
+        options = list(size = 10)
       ),
-      div(
-        class = "mb-2",
-        tags$h5(class = "mb-1 mt-0", "Select a Year"),
-        pickerInput(
-          "year.single",
-          label = NULL,
-          choices = years,
-          selected = max(years),
-          multiple = FALSE
-        )
-      ),
+      pickerInput(
+        "year.single",
+        label = "Select a Year",
+        choices = years,
+        selected = max(years),
+        multiple = FALSE,
+        options = list(size = 10)
+      )
     ),
 
     #### Main Body ####
@@ -103,7 +96,7 @@ nav_panel(
         "Change from Last Year",
         layout_sidebar(
           sidebar = sidebar(
-            width = "25%",
+            width = "35%",
             pickerInput(
               "table_selection_single",
               "Select a Table",
@@ -124,19 +117,15 @@ nav_panel(
                 "Programs" = c("Number of Programs", "Program Attendance")
               ),
               selected = "Overview",
-              multiple = FALSE
+              multiple = FALSE,
+              options = list(size = 10)
             ),
             checkboxInput(
               "percap.single",
               "Show Values Per Capita?",
               value = FALSE
-            ) #,
-            ##### CSV Download Button #####
-            #uiOutput("csv_button.single") #fix reactable output when downloading
-          ),
-          reactableOutput("table_single"),
-          card(
-            class = "my-bg-white",
+            ),
+            hr(),
             p(
               HTML(
                 paste0(
@@ -146,13 +135,18 @@ nav_panel(
                 )
               )
             )
-          )
+
+            #,
+            ##### CSV Download Button #####
+            #uiOutput("csv_button.single") #fix reactable output when downloading
+          ),
+          reactableOutput("table_single"),
         )
       ),
       nav_panel(
         "Staff Workload",
         layout_columns(
-          col_widths = c(5, 7),
+          col_widths = c(4, 8),
 
           layout_columns(
             col_widths = c(12, 12),
@@ -187,7 +181,7 @@ nav_panel(
 
         layout_sidebar(
           sidebar = sidebar(
-            width = "25%",
+            width = "35%",
             pickerInput(
               "hc_col.single",
               "Select a Value to Graph",
@@ -200,12 +194,23 @@ nav_panel(
                 "Program Attendance" = "TOTATTEN",
                 "Total Collection" = "TOTPHYS",
                 "Total Circulation" = "TOTCIR"
-              )
+              ),
+              options = list(size = 10)
             ),
             checkboxInput(
               "under_50k.single",
-              "Include only libraries serving < 50,000?",
+              "Show comparison lines for libraries only serving < 50,000 people?",
               value = FALSE
+            ),
+            hr(),
+            p(
+              HTML(
+                "<b>This chart compares the selected library to other libraries in the state.</b><br><br>",
+
+                "<b>Average of Libraries</b> calculates each library’s per capita value and then averages those figures, giving equal weight to every library regardless of size. This reflects the typical per capita value if all libraries were considered equally.<br>",
+
+                "<b>Median of Libraries</b> identifies the middle per capita value, offering a picture of what the “typical” library looks like while reducing the influence of outliers."
+              )
             )
           ),
           card(class = "my-bg-white", highchartOutput("hc_comparison_single"))
@@ -217,63 +222,58 @@ nav_panel(
 
         layout_sidebar(
           sidebar = sidebar(
-            width = "25%",
-            div(
-              class = "mb-2",
-              tags$h5(class = "mb-1 mt-0", "Select a Table"),
-              pickerInput(
-                "table_selection_peer",
-                label = NULL,
-                choices = list(
-                  "Overview",
-                  "Revenue and Expenditures" = c(
-                    "Revenue",
-                    "Total Expenditures",
-                    "Staff Expenditures",
-                    "Collection Expenditures"
-                  ),
-                  "Resources and Services" = c(
-                    "Circulation",
-                    "Collections",
-                    "Visits, Borrowers, Reference, and ILL",
-                    "Internet Access"
-                  ),
-                  "Programs" = c("Number of Programs", "Program Attendance")
+            width = "35%",
+            pickerInput(
+              "table_selection_peer",
+              label = "Select a Table",
+              choices = list(
+                "Overview",
+                "Revenue and Expenditures" = c(
+                  "Revenue",
+                  "Total Expenditures",
+                  "Staff Expenditures",
+                  "Collection Expenditures"
                 ),
-                selected = "Overview",
-                multiple = FALSE
-              )
-            ),
-            div(
-              div(
-                class = "mb-2",
-                tags$h5(
-                  class = "mb-1 mt-0",
-                  "Choose Closest 10 Libraries Based On:"
+                "Resources and Services" = c(
+                  "Circulation",
+                  "Collections",
+                  "Visits, Borrowers, Reference, and ILL",
+                  "Internet Access"
                 ),
-                pickerInput(
-                  "peergroup",
-                  label = NULL,
-                  choices = c(
-                    "Population of Legal Service Area" = "POPU_LSA",
-                    "Total Operating Revenue" = "TOTINCM",
-                    "Total FTE of Paid Staff" = "TOTSTAFF"
-                  ),
-                  selected = "Population of Legal Service Area",
-                  multiple = FALSE
-                )
+                "Programs" = c("Number of Programs", "Program Attendance")
               ),
-              checkboxInput(
-                "per_cap.table_peer",
-                "Show Values Per Capita?",
-                value = FALSE
-              ),
-              checkboxInput(
-                "color_table_peer",
-                "Color Table by High/Low Values?",
-                value = TRUE
-              )
+              selected = "Overview",
+              multiple = FALSE,
+              options = list(size = 10)
             ),
+            pickerInput(
+              "peergroup",
+              label = "Choose Closest 10 Libraries Based On:",
+              choices = c(
+                "Population of Legal Service Area" = "POPU_LSA",
+                "Total Operating Revenue" = "TOTINCM",
+                "Total FTE of Paid Staff" = "TOTSTAFF"
+              ),
+              selected = "Population of Legal Service Area",
+              multiple = FALSE,
+              options = list(size = 10)
+            ),
+            checkboxInput(
+              "per_cap.table_peer",
+              "Show Values Per Capita?",
+              value = FALSE
+            ),
+            checkboxInput(
+              "color_table_peer",
+              "Color Table by High/Low Values?",
+              value = FALSE
+            ),
+            # hr(),
+            # p(
+            #   HTML(
+            #     "About placeholder!"
+            #   )
+            # ),
             # ##### CSV Download Button #####
 
             uiOutput("csv_button_peer")
